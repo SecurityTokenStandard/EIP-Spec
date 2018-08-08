@@ -2,8 +2,8 @@
 
 eip: ???
 title: Standard for Security Tokens  
-author: polymath, adam, pablo, fabian, stephane
-discussions-to: st20@polymath.network
+author: Polymath, Adam Dossa, Pablo Ruiz, Fabian Vogelsteller, Stephane Gosselin
+discussions-to: ststandard@polymath.network
 status: Draft  
 type: Standards Track  
 category: ERC  
