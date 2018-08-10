@@ -1,14 +1,12 @@
-# Draft EIP for Semi-Fungible Tokens
-
 ---
 
 eip: ERC-SFT (working name until EIP assigned)
 title: Standard for Semi-Fungible Tokens
 author: Polymath, Adam Dossa, Pablo Ruiz, Fabian Vogelsteller, Stephane Gosselin
 discussions-to: ststandard@polymath.network
-status: Draft  
-type: Standards Track  
-category: ERC  
+status: Draft
+type: Standards Track
+category: ERC
 created: 2018-08-05
 require: ERC1066, ERC165, ERC820
 
