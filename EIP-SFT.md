@@ -67,7 +67,7 @@ TODO: Specify reason codes within the ERC1066 framework
 /// @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-SFT.md
 ///  Note: the ERC-165 identifier for this interface is [TODO].
 
-interface IERC-SFT {
+interface IERCSFT {
 
     /// @notice A descriptive name for tokens in this contract
     function name() external view returns (string _name);
@@ -101,7 +101,7 @@ interface IERC-SFT {
     /// @param _data Additional data attached to the transfer of tokens
     /// @return A reason code related to the success of the send operation
     /// @return The tranche to which the transferred tokens were allocated for the _to address
-    function sendTranche(address _to, bytes32 _tranche, uint256 _amount, bytes _data) external returns (byte, bytes32)
+    function sendTranche(address _to, bytes32 _tranche, uint256 _amount, bytes _data) external returns (byte, bytes32);
 
     /// @notice Transfers the ownership of tokens from a specified tranche from one address to another address
     /// @param _from The address from which to transfer tokens from
@@ -112,18 +112,18 @@ interface IERC-SFT {
     /// @param _operatorData Additional data attached to the transfer of tokens by the operator
     /// @return A reason code related to the success of the send operation
     /// @return The tranche to which the transferred tokens were allocated for the _to address
-    function operatorSendTranche(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data, bytes _operatorData) external returns (byte, bytes32)
+    function operatorSendTranche(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data, bytes _operatorData) external returns (byte, bytes32);
 
     /// @notice Allows enumeration over an individual owners tranches
     /// @param _owner An address over which to enumerate tranches
     /// @param _index The index of the tranche
     /// @return The tranche key corresponding to `_index`
-    function trancheByIndex(address _owner, uint256 _index) external view returns (bytes32)
+    function trancheByIndex(address _owner, uint256 _index) external view returns (bytes32);
 
     /// @notice Enables caller to determine the count of tranches owned by an address
     /// @param _owner An address over which to enumerate tranches
     /// @return The number of tranches owned by an `_owner`
-    function tranchesOf(address _owner) external view returns (uint256)
+    function tranchesOf(address _owner) external view returns (uint256);
 
     /// @notice Defines a list of operators which can operate over all addresses and tranches
     /// @return The list of default operators
@@ -149,7 +149,7 @@ interface IERC-SFT {
     /// @notice Revokes authorisation of an operator previously given for a specified tranche of `msg.sender`
     /// @param _tranche The tranche to which the operator is de-authorised
     /// @param _operator An address which is being de-authorised
-    function revokeTrancheOperator(bytes32 _tranche, _operator operator) public;
+    function revokeTrancheOperator(bytes32 _tranche, address _operator) public;
 
     /// @notice Determines whether `_operator` is an operator for all tranches of `_owner`
     /// @param _operator The operator to check
@@ -191,7 +191,8 @@ interface IERC-SFT {
         address indexed operator,
         address indexed from,
         address indexed to,
-        bytes32 index tranche,
+        bytes32 fromTranche,
+        bytes32 toTranche,
         uint256 amount,
         bytes data,
         bytes operatorData
@@ -207,7 +208,7 @@ interface IERC-SFT {
     event RevokedOperator(address indexed operator, address indexed owner);
 
     /// @notice This emits on any successful revoke of an operators approval for a single tranche
-    event RevokedOperator(address indexed operator, address indexed owner);
+    event RevokedTrancheOperator(bytes indexed tranche, address indexed operator, address indexed owner);
 
 }
 ```
