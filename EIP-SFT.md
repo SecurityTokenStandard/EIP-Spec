@@ -233,6 +233,13 @@ Having this data allows token contracts to implement sophisticated logic to gove
 
 Given the enumerable nature of an owners tranches, implementations should avoid using for / while loops to enumerate tranches on-chain. Doing so may incur unbounded gas costs or breach block gas limits.
 
+### Reason Codes
+
+Transactions that could fail, for example transfers, return a reason code. Reason codes follow the ERC-1066 specification, and are defined as:  
+
+0x00 - success
+[TODO - complete...]
+
 ### ERC20 / ERC777 Backwards Compatibility
 
 In order to remain backwards compatible with ERC20 / ERC777 (and other fungible token standards) it is necessary to define what tranche or tranches are used when a `transfer` / `send` operation is executed (i.e. when not explicitly specifying the tranche).
