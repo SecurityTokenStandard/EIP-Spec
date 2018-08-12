@@ -56,8 +56,6 @@ In general it may be that whilst tokens are fungible under some circumstances, t
 
 ## Specification
 
-TODO: Specify interface registration approach (e.g. using ERC820, ERC165)
-
 TODO: Specify token receiver interface
 
 TODO: Specify reason codes within the ERC1066 framework
@@ -212,6 +210,8 @@ interface IERCSFT {
 
 }
 ```
+
+The token contract MUST register the ERCSFTToken interface (pending EIP approval) with its own address via ERC820. It MAY register the ERC20 and ERC777 interface based on the implementation. If the contract has a switch to enable or disable ERCSFT, ERC20 or ERC777 functions, every time the switch is triggered, the token MUST register or unregister the appropriate interface via ERC820. (Unregistering implies setting the address to 0x0.)
 
 ### Notes
 
