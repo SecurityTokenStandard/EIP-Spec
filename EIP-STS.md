@@ -38,8 +38,8 @@ interface IERCSTS is IERCSFT {
     /// @notice Sets a URI for a named document, and an optional hash of the document contents
     /// @param _name The name of the document to fetch the URI for
     /// @param _uri The URI for the document
-    /// @param _hash A hash of the document content (optional - set to 0x0 if not required)
-    function setDocument(bytes32 _name, string _uri, bytes32 _hash) public;
+    /// @param _documentHash A hash of the document content (optional - set to 0x0 if not required)
+    function setDocument(bytes32 _name, string _uri, bytes32 _documentHash) public;
 
     /// @notice Used to indicate that no more securities can be issued (irreversible)
     /// @param _declaration A signed statement indicating that the caller acknowledges that this action is irreversible

@@ -196,13 +196,13 @@ interface IERCSFT {
     event AuthorizedOperator(address indexed operator, address indexed owner);
 
     /// @notice This emits on any successful operator approval for a single tranche, excluding default tranche operators
-    event AuthorizedTrancheOperator(bytes indexed tranche, address indexed operator, address indexed owner);
+    event AuthorizedTrancheOperator(bytes32 indexed tranche, address indexed operator, address indexed owner);
 
     /// @notice This emits on any successful revoke of an operators approval for all tranches
     event RevokedOperator(address indexed operator, address indexed owner);
 
     /// @notice This emits on any successful revoke of an operators approval for a single tranche
-    event RevokedTrancheOperator(bytes indexed tranche, address indexed operator, address indexed owner);
+    event RevokedTrancheOperator(bytes32 indexed tranche, address indexed operator, address indexed owner);
 
 }
 ```
