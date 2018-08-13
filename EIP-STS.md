@@ -94,10 +94,29 @@ In order to provide a richer result than just true or false, a byte return code 
 
 ### Reason Codes
 
-Transactions that could fail, for example transfers, return a reason code. Reason codes follow the ERC-1066 specification, and are defined as:  
+Sending a security token could fail for any number of reasons. To improve the user experience, `verifySendTranche` MUST return an array of reason code on success or failure based on the EIP-1066 application-specific status codes specified below. An implementation can also return arbitrary data to provide additional which is not captured by the return codes.
 
-0x00 - success
-[TODO - complete...]
+| Code   | Reason                                                        |
+| ------ | ------------------------------------------------------------- |
+| `0xA0` | Transfer Verified - Unrestricted                              |
+| `0xA1` | Transfer Verified - Rule Engine Approval for Restricted Token |
+| `0xA2` | Transfer Verified - Off-Chain Approval for Restricted Token   |
+| `0xA3` | Transfer Blocked - Sender lockup period not ended             |
+| `0xA4` | Transfer Blocked - Sender balance insufficient                |
+| `0xA5` | Transfer Blocked - Sender not whitelisted                     |
+| `0xA6` | Transfer Blocked - Receiver not whitelisted                   |
+| `0xA6` | Transfer Blocked - Identity restriction                       |
+| `0xA7` | Transfer Blocked - Token restriction                          |
+| `0xA8` | Transfer Blocked - Token granularity                          |
+| `0xA9` |                                                               |
+| `0xAA` |                                                               |
+| `0xAB` |                                                               |
+| `0xAC` |                                                               |
+| `0xAD` |                                                               |
+| `0xAE` |                                                               |
+| `0xAF` |                                                               |
+
+[TODO - improve list of reason codes based on community feedback]
 
 ### ERC20 / ERC777 Backwards Compatibility
 
