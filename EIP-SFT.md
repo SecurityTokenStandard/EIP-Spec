@@ -134,7 +134,7 @@ interface IERCSFT {
     /// @notice Authorises an operator for a given tranche of `msg.sender`
     /// @param _tranche The tranche to which the operator is authorised
     /// @param _operator An address which is being authorised
-    function authorizeTrancheOperator(bytes32 _tranche, address _operator) public;
+    function authorizeOperatorTranche(bytes32 _tranche, address _operator) public;
 
     /// @notice Revokes authorisation of an operator previously given for all tranches of `msg.sender`
     /// @param _operator An address which is being de-authorised
@@ -143,7 +143,7 @@ interface IERCSFT {
     /// @notice Revokes authorisation of an operator previously given for a specified tranche of `msg.sender`
     /// @param _tranche The tranche to which the operator is de-authorised
     /// @param _operator An address which is being de-authorised
-    function revokeTrancheOperator(bytes32 _tranche, address _operator) public;
+    function revokeOperatorTranche(bytes32 _tranche, address _operator) public;
 
     /// @notice Determines whether `_operator` is an operator for all tranches of `_owner`
     /// @param _operator The operator to check
@@ -156,7 +156,7 @@ interface IERCSFT {
     /// @param _operator The operator to check
     /// @param _owner The owner to check
     /// @return Whether the `_operator` is an operator for a specified tranche of `_owner`
-    function isOperatorTrancheFor(bytes32 _tranche, address _operator, address _owner) public view returns (bool);
+    function isOperatorForTranche(bytes32 _tranche, address _operator, address _owner) public view returns (bool);
 
     /// @notice Increases totalSupply and the corresponding amount of the specified owners tranche
     /// @param _owner The owner whose balance should be increased
@@ -196,13 +196,13 @@ interface IERCSFT {
     event AuthorizedOperator(address indexed operator, address indexed owner);
 
     /// @notice This emits on any successful operator approval for a single tranche, excluding default tranche operators
-    event AuthorizedTrancheOperator(bytes32 indexed tranche, address indexed operator, address indexed owner);
+    event AuthorizedOperatorTranche(bytes32 indexed tranche, address indexed operator, address indexed owner);
 
     /// @notice This emits on any successful revoke of an operators approval for all tranches
     event RevokedOperator(address indexed operator, address indexed owner);
 
     /// @notice This emits on any successful revoke of an operators approval for a single tranche
-    event RevokedTrancheOperator(bytes32 indexed tranche, address indexed operator, address indexed owner);
+    event RevokedOperatorTranche(bytes32 indexed tranche, address indexed operator, address indexed owner);
 
 }
 ```
