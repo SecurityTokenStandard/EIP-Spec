@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-interface IERCSFT {
+interface IERCPFT {
 
     /// @notice A descriptive name for tokens in this contract
     function name() external view returns (string _name);
@@ -141,8 +141,8 @@ interface IERCSFT {
 
 }
 
-// Reference implementation of semi-fungible tokens
-contract SFT is IERCSFT {
+// Reference implementation of partially-fungible tokens
+contract PFT is IERCPFT {
 
     // Represents a fungible set of tokens.
     struct Tranche {

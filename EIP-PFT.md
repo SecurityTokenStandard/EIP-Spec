@@ -1,8 +1,8 @@
 ---
 
-eip: ERC-SFT (working name until EIP assigned)
-title: Standard for Semi-Fungible Tokens
-author: Polymath, Adam Dossa, Pablo Ruiz, Fabian Vogelsteller, Stephane Gosselin
+eip: ERC-PFT (working name until EIP assigned)
+title: Standard for Partially-Fungible Tokens
+author: Adam Dossa, Pablo Ruiz, Fabian Vogelsteller, Stephane Gosselin
 discussions-to: ststandard@polymath.network
 status: Draft
 type: Standards Track
@@ -61,11 +61,11 @@ TODO: Specify token receiver interface
 TODO: Specify reason codes within the ERC1066 framework
 
 ```
-/// @title ERC-SFT Fungible Token Metadata Standard
-/// @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-SFT.md
+/// @title ERC-PFT Fungible Token Metadata Standard
+/// @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-PFT.md
 ///  Note: the ERC-165 identifier for this interface is [TODO].
 
-interface IERCSFT {
+interface IERCPFT {
 
     /// @notice A descriptive name for tokens in this contract
     function name() external view returns (string _name);
@@ -207,7 +207,7 @@ interface IERCSFT {
 }
 ```
 
-The token contract MUST register the ERCSFTToken interface (pending EIP approval) with its own address via ERC820. It MAY register the ERC20 and ERC777 interface based on the implementation. If the contract has a switch to enable or disable ERCSFT, ERC20 or ERC777 functions, every time the switch is triggered, the token MUST register or unregister the appropriate interface via ERC820. (Unregistering implies setting the address to 0x0.)
+The token contract MUST register the ERCPFTToken interface (pending EIP approval) with its own address via ERC820. It MAY register the ERC20 and ERC777 interface based on the implementation. If the contract has a switch to enable or disable ERCPFT, ERC20 or ERC777 functions, every time the switch is triggered, the token MUST register or unregister the appropriate interface via ERC820. (Unregistering implies setting the address to 0x0.)
 
 ### Notes
 

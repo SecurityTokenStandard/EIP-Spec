@@ -1,6 +1,6 @@
 ---
 
-eip: ERC-STS (working name until EIP assigned)
+eip: ERC-ST (working name until EIP assigned)
 title: Standard for Security Tokens
 author: Polymath, Adam Dossa, Pablo Ruiz, Fabian Vogelsteller, Stephane Gosselin
 discussions-to: ststandard@polymath.network
@@ -8,7 +8,7 @@ status: Draft
 type: Standards Track
 category: ERC
 created: 2018-08-05
-require: ERC1066, ERC165, ERC820, ERC-SFT
+require: ERC1066, ERC165, ERC820, ERC-PFT
 
 ---
 
@@ -18,16 +18,16 @@ A standard interface for representing securities and their ownership.
 
 ## Abstract
 
-Extends EIP-SFT to provide additional methods for verifying transfers and capturing data about the security.
+Extends EIP-PFT to provide additional methods for verifying transfers and capturing data about the security.
 
 ## Specification
 
 ```
-/// @title ERC-STS Fungible Token Metadata Standard
-/// @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-STS.md
+/// @title ERC-ST Fungible Token Metadata Standard
+/// @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-ST.md
 ///  Note: the ERC-165 identifier for this interface is [TODO].
 
-interface IERCSTS is IERCSFT {
+interface IERCST is IERCPFT {
 
     /// @notice Returns the URI associated with a named document
     /// @param _name The name of the document to fetch the URI for
@@ -68,7 +68,7 @@ interface IERCSTS is IERCSFT {
 
 ### Notes
 
-This standard extends EIP-SFT to add additional features required to represent securities.
+This standard extends EIP-PFT to add additional features required to represent securities.
 
 The result of a call to verifySendTranche may change depending on on-chain state (including block numbers or timestamps) and possibly off-chain oracles. If it is called, not as part of a transfer itself, but in a speculative fashion (i.e. not as part of a transfer), it should be considered a view function that does not modify any state.
 
@@ -120,7 +120,7 @@ Sending a security token could fail for any number of reasons. To improve the us
 
 ### ERC20 / ERC777 Backwards Compatibility
 
-If the EIP-SFT implementation is ERC20 / ERC777 compatible (by adding send / transfer functions which define default tranches to operate on) then verifySend should be correspondingly implemented to use the same default logic.
+If the EIP-PFT implementation is ERC20 / ERC777 compatible (by adding send / transfer functions which define default tranches to operate on) then verifySend should be correspondingly implemented to use the same default logic.
 
 ### On-chain vs. Off-chain Transfer Restrictions
 

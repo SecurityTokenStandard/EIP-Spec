@@ -14,7 +14,7 @@ A security token requires the following features:
 
   - association of public data to the security (e.g. issuer details, legal documentation)
 
-## Semi-Fungible Token
+## Partially-Fungible Token
 
 This allows a token to partition an owners balances into any number of tranches.
 
