@@ -8,7 +8,7 @@ status: Draft
 type: Standards Track
 category: ERC
 created: 2018-08-05
-require: ERC1066, ERC165, ERC820, ERC-PFT
+require: ERC1066, ERC165, ERC-PFT
 
 ---
 
@@ -25,15 +25,15 @@ Extends EIP-PFT to provide additional methods for verifying transfers and captur
 ```
 /// @title ERC-ST Fungible Token Metadata Standard
 /// @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-ST.md
-///  Note: the ERC-165 identifier for this interface is [TODO].
+///  Note: the ERC-165 identifier for this interface is 0x25702e0a.
 
-interface IERCST is IERCPFT {
+interface IERCST is IERCPFT, IERC165 {
 
     /// @notice Returns the URI associated with a named document
     /// @param _name The name of the document to fetch the URI for
     /// @return A URI for the named document
     /// @return A hash of the URI linked document (optional - set to 0x0 if not required)
-    function getDocument(bytes32 _name) public view returns (string, bytes32)
+    function getDocument(bytes32 _name) public view returns (string, bytes32);
 
     /// @notice Sets a URI for a named document, and an optional hash of the document contents
     /// @param _name The name of the document to fetch the URI for
@@ -61,6 +61,16 @@ interface IERCST is IERCPFT {
     function verifySendTranche(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data) public view returns (byte, bytes32, bytes32);
 
 }
+
+interface IERC165 {
+    /// @notice Query if a contract implements an interface
+    /// @param interfaceID The interface identifier, as specified in ERC-165
+    /// @dev Interface identification is specified in ERC-165. This function
+    ///  uses less than 30,000 gas.
+    /// @return `true` if the contract implements `interfaceID` and
+    ///  `interfaceID` is not 0xffffffff, `false` otherwise
+    function supportsInterface(bytes4 interfaceID) external view returns (bool);
+}
 ```
 
 ### Notes
@@ -68,6 +78,10 @@ interface IERCST is IERCPFT {
 This standard extends EIP-PFT to add additional features required to represent securities.
 
 The result of a call to verifySendTranche may change depending on on-chain state (including block numbers or timestamps) and possibly off-chain oracles. If it is called, not as part of a transfer itself, but in a speculative fashion (i.e. not as part of a transfer), it should be considered a view function that does not modify any state.
+
+### EIP 165 Compliance
+
+A Security Token MUST implement the ERC-165 interface and register as IERC165, IERCPFT, and IERCST compliant. A token MAY register as ERC20 and ERC777 compliant if the appropriate functions are implemented based on the spec defined in ERC20 / ERC777 Backwards Compatibility.
 
 ### Rationale
 
@@ -117,7 +131,7 @@ Sending a security token could fail for any number of reasons. To improve the us
 
 ### ERC20 / ERC777 Backwards Compatibility
 
-If the EIP-PFT implementation is ERC20 / ERC777 compatible (by adding send / transfer functions which define default tranches to operate on) then verifySend should be correspondingly implemented to use the same default logic.
+If the EIP-PFT implementation is ERC20 / ERC777 compatible (by adding send / transfer functions which define default tranches to operate on) then the function `verifySend` should be correspondingly implemented to use the same default logic.
 
 ### On-chain vs. Off-chain Transfer Restrictions
 

@@ -8,7 +8,7 @@ status: Draft
 type: Standards Track
 category: ERC
 created: 2018-08-05
-require: ERC1066, ERC165, ERC820
+require: ERC165
 
 ---
 
@@ -56,12 +56,12 @@ In general it may be that whilst tokens are fungible under some circumstances, t
 
 ## Specification
 
-TODO: Specify token receiver interface
+[TODO: Specify token receiver interface]
 
 ```
 /// @title ERC-PFT Fungible Token Metadata Standard
 /// @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-PFT.md
-///  Note: the ERC-165 identifier for this interface is [TODO].
+///  Note: the ERC-165 identifier for this interface is 0xffe8e498.
 
 interface IERCPFT {
 
@@ -209,13 +209,15 @@ interface IERCPFT {
 }
 ```
 
-The token contract MUST register the ERCPFTToken interface (pending EIP approval) with its own address via ERC820. It MAY register the ERC20 and ERC777 interface based on the implementation. If the contract has a switch to enable or disable ERCPFT, ERC20 or ERC777 functions, every time the switch is triggered, the token MUST register or unregister the appropriate interface via ERC820. (Unregistering implies setting the address to 0x0.)
-
 ### Notes
 
 `defaultOperators` can be used to transparently grant an account (which could be a multi-sig or other smart contract) unrestricted authorisation to transfer tokens for all owners and tranches. An implementation can enforce that this is always an empty list if required.
 
 [TODO - Add more detail to the below section]
+
+### EIP 165 Compliance
+
+A Partially-Fungible Token MUST implement the ERC-165 interface and register as IERC165, and IERCPFT compliant. A token MAY register as ERC20 and ERC777 compliant if the appropriate functions are implemented based on the spec defined in ERC20 / ERC777 Backwards Compatibility.
 
 ### Rationale
 
