@@ -49,10 +49,6 @@ interface IERCST is IERCPFT {
     /// @return A boolean indicating whether additional securities can be minted
     function canMint() public view returns (bool);
 
-    /// @notice Any minting, burning or transferring of tokens must be at a multiple of granularity
-    /// @return The granularity at which tokens can be minted, burnt or transferred
-    function granularity() public view returns (uint256);
-
     /// @notice Verifies whether a transfer would succeed or not
     /// @param _from The address from which to transfer tokens
     /// @param _to The address to which to transfer tokens

@@ -71,6 +71,10 @@ interface IERCPFT {
     /// @notice An abbreviated name for tokens in this contract
     function symbol() external view returns (string _symbol);
 
+    /// @notice Any minting, burning or transferring of tokens must be at a multiple of granularity
+    /// @return The granularity at which tokens can be minted, burnt or transferred
+    function granularity() public view returns (uint256);
+
     /// @notice Counts the sum of all tranche balances assigned to an owner
     /// @param _owner An address for whom to query the balance
     /// @return The number of tokens owned by `_owner`, possibly zero
