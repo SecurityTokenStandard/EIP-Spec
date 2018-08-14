@@ -2,7 +2,7 @@
 
 eip: ERC-ST (working name until EIP assigned)
 title: Standard for Security Tokens
-author: Polymath, Adam Dossa, Pablo Ruiz, Fabian Vogelsteller, Stephane Gosselin
+author: Adam Dossa, Pablo Ruiz, Fabian Vogelsteller, Stephane Gosselin
 discussions-to: ststandard@polymath.network
 status: Draft
 type: Standards Track
@@ -59,9 +59,10 @@ interface IERCST is IERCPFT {
     /// @param _tranche The tranche from which to transfer tokens
     /// @param _amount The amount of tokens to transfer from `_tranche`
     /// @param _data Additional data attached to the transfer of tokens
-    /// @return A reason code related to the success of the send operation
+    /// @return A reason code related to the success or failure of the send operation following the specification
+    /// @return Arbitrary data a token implementation can append as further explanation for the reason code
     /// @return The tranche to which the transferred tokens were allocated for the _to address
-    function verifySendTranche(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data) public view returns (byte, bytes32);
+    function verifySendTranche(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data) public view returns (byte, bytes32, bytes32);
 
 }
 ```
@@ -94,7 +95,7 @@ In order to provide a richer result than just true or false, a byte return code 
 
 ### Reason Codes
 
-Sending a security token could fail for any number of reasons. To improve the user experience, `verifySendTranche` MUST return an array of reason code on success or failure based on the EIP-1066 application-specific status codes specified below. An implementation can also return arbitrary data to provide additional which is not captured by the return codes.
+Sending a security token could fail for any number of reasons. To improve the user experience, `verifySendTranche` MUST return a reason code on success or failure based on the EIP-1066 application-specific status codes specified below. An implementation can also return arbitrary data as a `bytes32` to provide additional information not captured by the reason code.
 
 | Code   | Reason                                                        |
 | ------ | ------------------------------------------------------------- |

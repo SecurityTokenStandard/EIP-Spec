@@ -58,8 +58,6 @@ In general it may be that whilst tokens are fungible under some circumstances, t
 
 TODO: Specify token receiver interface
 
-TODO: Specify reason codes within the ERC1066 framework
-
 ```
 /// @title ERC-PFT Fungible Token Metadata Standard
 /// @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-PFT.md
@@ -89,24 +87,24 @@ interface IERCPFT {
     function totalSupply() external view returns (uint256);
 
     /// @notice Transfers the ownership of tokens from a specified tranche from one address to another address
+    /// @dev MUST revert if tokens not successfully sent
     /// @param _to The address to which to transfer tokens to
     /// @param _tranche The tranche from which to transfer tokens
     /// @param _amount The amount of tokens to transfer from `_tranche`
     /// @param _data Additional data attached to the transfer of tokens
-    /// @return A reason code related to the success of the send operation
     /// @return The tranche to which the transferred tokens were allocated for the _to address
-    function sendTranche(address _to, bytes32 _tranche, uint256 _amount, bytes _data) external returns (byte, bytes32);
+    function sendTranche(address _to, bytes32 _tranche, uint256 _amount, bytes _data) external returns (bytes32);
 
     /// @notice Transfers the ownership of tokens from a specified tranche from one address to another address
+    /// @dev MUST revert if tokens not successfully sent
     /// @param _from The address from which to transfer tokens from
     /// @param _to The address to which to transfer tokens to
     /// @param _tranche The tranche from which to transfer tokens
     /// @param _amount The amount of tokens to transfer from `_tranche`
     /// @param _data Additional data attached to the transfer of tokens
     /// @param _operatorData Additional data attached to the transfer of tokens by the operator
-    /// @return A reason code related to the success of the send operation
     /// @return The tranche to which the transferred tokens were allocated for the _to address
-    function operatorSendTranche(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data, bytes _operatorData) external returns (byte, bytes32);
+    function operatorSendTranche(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data, bytes _operatorData) external returns (bytes32);
 
     /// @notice Allows enumeration over an individual owners tranches
     /// @param _owner An address over which to enumerate tranches
@@ -159,20 +157,20 @@ interface IERCPFT {
     function isOperatorForTranche(bytes32 _tranche, address _operator, address _owner) public view returns (bool);
 
     /// @notice Increases totalSupply and the corresponding amount of the specified owners tranche
+    /// @dev MUST revert if tokens not successfully minted
     /// @param _owner The owner whose balance should be increased
     /// @param _tranche The tranche to allocate the increase in balance
     /// @param _amount The amount by which to increase the balance
     /// @param _data Additional data attached to the minting of tokens
-    /// @return A reason code related to the success of the mint operation
-    function mint(address _owner, bytes32 _tranche, uint256 _amount, bytes _data) public returns (byte reason);
+    function mint(address _owner, bytes32 _tranche, uint256 _amount, bytes _data) public;
 
     /// @notice Decreases totalSupply and the corresponding amount of the specified owners tranche
+    /// @dev MUST revert if tokens not successfully burned
     /// @param _owner The owner whose balance should be decreased
     /// @param _tranche The tranche to allocate the decrease in balance
     /// @param _amount The amount by which to decrease the balance
     /// @param _data Additional data attached to the burning of tokens
-    /// @return A reason code related to the success of the burn operation
-    function burn(address _owner, bytes32 _tranche, uint256 _amount, bytes _data) public returns (byte reason);
+    function burn(address _owner, bytes32 _tranche, uint256 _amount, bytes _data) public;
 
     /// @notice This emits on any successful call to `mint`
     event Minted(address indexed owner, bytes32 tranche, uint256 amount, bytes data);
@@ -228,13 +226,6 @@ Having this data allows token contracts to implement sophisticated logic to gove
 ### Caveats
 
 Given the enumerable nature of an owners tranches, implementations should avoid using for / while loops to enumerate tranches on-chain. Doing so may incur unbounded gas costs or breach block gas limits.
-
-### Reason Codes
-
-Transactions that could fail, for example transfers, return a reason code. Reason codes follow the ERC-1066 specification, and are defined as:  
-
-0x00 - success
-[TODO - complete...]
 
 ### ERC20 / ERC777 Backwards Compatibility
 
