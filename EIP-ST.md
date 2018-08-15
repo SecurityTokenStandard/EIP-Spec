@@ -22,7 +22,7 @@ Extends EIP-PFT to provide additional methods for verifying transfers and captur
 
 ## Specification
 
-```
+```js
 /// @title ERC-ST Fungible Token Metadata Standard
 /// @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-ST.md
 ///  Note: the ERC-165 identifier for this interface is 0x25702e0a.
