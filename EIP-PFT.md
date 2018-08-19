@@ -81,10 +81,10 @@ interface IERCPFT {
     function balanceOf(address _owner) external view returns (uint256);
 
     /// @notice Counts the balance associated with a specific tranche assigned to an owner
-    /// @param _owner An address for whom to query the balance
     /// @param _tranche The tranche for which to query the balance
+    /// @param _owner An address for whom to query the balance
     /// @return The number of tokens owned by `_owner` with the metadata associated with `_tranche`, possibly zero
-    function balanceOfTranche(address _owner, bytes32 _tranche) external view returns (uint256);
+    function balanceOfTranche(bytes32 _tranche, address _owner) external view returns (uint256);
 
     /// @notice Count all tokens tracked by this contract
     /// @return A count of all tokens tracked by this contract
@@ -92,23 +92,45 @@ interface IERCPFT {
 
     /// @notice Transfers the ownership of tokens from a specified tranche from one address to another address
     /// @dev MUST revert if tokens not successfully sent
-    /// @param _to The address to which to transfer tokens to
     /// @param _tranche The tranche from which to transfer tokens
+    /// @param _to The address to which to transfer tokens to
     /// @param _amount The amount of tokens to transfer from `_tranche`
     /// @param _data Additional data attached to the transfer of tokens
     /// @return The tranche to which the transferred tokens were allocated for the _to address
-    function sendTranche(address _to, bytes32 _tranche, uint256 _amount, bytes _data) external returns (bytes32);
+    function sendTranche(bytes32 _tranche, address _to, uint256 _amount, bytes _data) external returns (bytes32);
+
+    /// @notice Batch transfers the ownership of tokens from specified tranches
+    /// @dev MUST revert if all tokens not successfully sent
+    /// @dev The length of _tranches, _tos & _amounts must be equal
+    /// @param _tranches The tranches from which to transfer tokens
+    /// @param _tos The addresses to which to transfer tokens to
+    /// @param _amounts The amount of tokens to transfer from each `_tranche`
+    /// @param _data Additional data attached to the transfer of tokens
+    /// @return The tranche to which the transferred tokens were allocated for the _to address
+    function sendTranches(bytes32[] _tranches, address[] _tos, uint256[] _amounts, bytes _data) external returns (bytes32);
 
     /// @notice Transfers the ownership of tokens from a specified tranche from one address to another address
     /// @dev MUST revert if tokens not successfully sent
+    /// @param _tranche The tranche from which to transfer tokens
     /// @param _from The address from which to transfer tokens from
     /// @param _to The address to which to transfer tokens to
-    /// @param _tranche The tranche from which to transfer tokens
     /// @param _amount The amount of tokens to transfer from `_tranche`
     /// @param _data Additional data attached to the transfer of tokens
     /// @param _operatorData Additional data attached to the transfer of tokens by the operator
     /// @return The tranche to which the transferred tokens were allocated for the _to address
-    function operatorSendTranche(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data, bytes _operatorData) external returns (bytes32);
+    function operatorSendTranche(bytes32 _tranche, address _from, address _to, uint256 _amount, bytes _data, bytes _operatorData) external returns (bytes32[]);
+
+    /// @notice Batch transfers the ownership of tokens from specified tranches
+    /// @dev MUST revert if tokens not successfully sent
+    /// @dev The length of _tranches, _froms, _tos & _amounts must be equal
+    /// @param _tranches The tranches from which to transfer tokens
+    /// @param _froms The addresses from which to transfer tokens from
+    /// @param _tos The addresses to which to transfer tokens to
+    /// @param _amounts The amounts of tokens to transfer from `_tranche`
+    /// @param _data Additional data attached to the transfer of tokens
+    /// @param _operatorData Additional data attached to the transfer of tokens by the operator
+    /// @return The tranche to which the transferred tokens were allocated for the _to address
+    function operatorSendTranches(bytes32[] _tranches, address[] _froms, address[] _tos, uint256[] _amounts, bytes _data, bytes _operatorData) external returns (bytes32[]);
 
     /// @notice Allows enumeration over an individual owners tranches
     /// @param _owner An address over which to enumerate tranches
@@ -160,35 +182,13 @@ interface IERCPFT {
     /// @return Whether the `_operator` is an operator for a specified tranche of `_owner`
     function isOperatorForTranche(bytes32 _tranche, address _operator, address _owner) public view returns (bool);
 
-    /// @notice Increases totalSupply and the corresponding amount of the specified owners tranche
-    /// @dev MUST revert if tokens not successfully minted
-    /// @param _owner The owner whose balance should be increased
-    /// @param _tranche The tranche to allocate the increase in balance
-    /// @param _amount The amount by which to increase the balance
-    /// @param _data Additional data attached to the minting of tokens
-    function mint(address _owner, bytes32 _tranche, uint256 _amount, bytes _data) public;
-
-    /// @notice Decreases totalSupply and the corresponding amount of the specified owners tranche
-    /// @dev MUST revert if tokens not successfully burned
-    /// @param _owner The owner whose balance should be decreased
-    /// @param _tranche The tranche to allocate the decrease in balance
-    /// @param _amount The amount by which to decrease the balance
-    /// @param _data Additional data attached to the burning of tokens
-    function burn(address _owner, bytes32 _tranche, uint256 _amount, bytes _data) public;
-
-    /// @notice This emits on any successful call to `mint`
-    event Minted(address indexed owner, bytes32 tranche, uint256 amount, bytes data);
-
-    /// @notice This emits on any successful call to `burn`
-    event Burnt(address indexed owner, bytes32 tranche, uint256 amount, bytes data);
-
     /// @notice This emits on any successful transfer or minting of tokens
-    event Sent(
+    event SentTranche(
+        bytes32 indexed fromTranche,
+        bytes32 toTranche,
         address indexed operator,
         address indexed from,
         address indexed to,
-        bytes32 fromTranche,
-        bytes32 toTranche,
         uint256 amount,
         bytes data,
         bytes operatorData

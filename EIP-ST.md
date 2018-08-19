@@ -60,6 +60,28 @@ interface IERCST is IERCPFT, IERC165 {
     /// @return The tranche to which the transferred tokens were allocated for the _to address
     function verifySendTranche(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data) public view returns (byte, bytes32, bytes32);
 
+    /// @notice Increases totalSupply and the corresponding amount of the specified owners tranche
+    /// @dev MUST revert if tokens not successfully minted
+    /// @param _owner The owner whose balance should be increased
+    /// @param _tranche The tranche to allocate the increase in balance
+    /// @param _amount The amount by which to increase the balance
+    /// @param _data Additional data attached to the minting of tokens
+    function mint(bytes32 _tranche, address _owner, uint256 _amount, bytes _data) public;
+
+    /// @notice Decreases totalSupply and the corresponding amount of the specified owners tranche
+    /// @dev MUST revert if tokens not successfully burned
+    /// @param _owner The owner whose balance should be decreased
+    /// @param _tranche The tranche to allocate the decrease in balance
+    /// @param _amount The amount by which to decrease the balance
+    /// @param _data Additional data attached to the burning of tokens
+    function burn(bytes32 _tranche, address _owner, uint256 _amount, bytes _data) public;
+
+    /// @notice This emits on any successful call to `mint`
+    event Minted(address indexed owner, bytes32 tranche, uint256 amount, bytes data);
+
+    /// @notice This emits on any successful call to `burn`
+    event Burnt(address indexed owner, bytes32 tranche, uint256 amount, bytes data);
+
 }
 
 interface IERC165 {

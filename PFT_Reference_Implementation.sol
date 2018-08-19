@@ -14,34 +14,34 @@ interface IERCPFT {
     function balanceOf(address _owner) external view returns (uint256);
 
     /// @notice Counts the balance associated with a specific tranche assigned to an owner
-    /// @param _owner An address for whom to query the balance
     /// @param _tranche The tranche for which to query the balance
+    /// @param _owner An address for whom to query the balance
     /// @return The number of tokens owned by `_owner` with the metadata associated with `_tranche`, possibly zero
-    function balanceOfTranche(address _owner, bytes32 _tranche) external view returns (uint256);
+    function balanceOfTranche(bytes32 _tranche, address _owner) external view returns (uint256);
 
     /// @notice Count all tokens tracked by this contract
     /// @return A count of all tokens tracked by this contract
     function totalSupply() external view returns (uint256);
 
     /// @notice Transfers the ownership of tokens from a specified tranche from one address to another address
-    /// @param _to The address to which to transfer tokens to
     /// @param _tranche The tranche from which to transfer tokens
+    /// @param _to The address to which to transfer tokens to
     /// @param _amount The amount of tokens to transfer from `_tranche`
     /// @param _data Additional data attached to the transfer of tokens
     /// @return A reason code related to the success of the send operation
     /// @return The tranche to which the transferred tokens were allocated for the _to address
-    function sendTranche(address _to, bytes32 _tranche, uint256 _amount, bytes _data) external returns (byte, bytes32);
+    function sendTranche(bytes32 _tranche, address _to, uint256 _amount, bytes _data) external returns (byte, bytes32);
 
     /// @notice Transfers the ownership of tokens from a specified tranche from one address to another address
+    /// @param _tranche The tranche from which to transfer tokens
     /// @param _from The address from which to transfer tokens from
     /// @param _to The address to which to transfer tokens to
-    /// @param _tranche The tranche from which to transfer tokens
     /// @param _amount The amount of tokens to transfer from `_tranche`
     /// @param _data Additional data attached to the transfer of tokens
     /// @param _operatorData Additional data attached to the transfer of tokens by the operator
     /// @return A reason code related to the success of the send operation
     /// @return The tranche to which the transferred tokens were allocated for the _to address
-    function operatorSendTranche(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data, bytes _operatorData) external returns (byte, bytes32);
+    function operatorSendTranche(bytes32 _tranche, address _from, address _to, uint256 _amount, bytes _data, bytes _operatorData) external returns (byte, bytes32);
 
     /// @notice Allows enumeration over an individual owners tranches
     /// @param _owner An address over which to enumerate tranches
@@ -94,20 +94,20 @@ interface IERCPFT {
     function isOperatorForTranche(bytes32 _tranche, address _operator, address _owner) public view returns (bool);
 
     /// @notice Increases totalSupply and the corresponding amount of the specified owners tranche
-    /// @param _owner The owner whose balance should be increased
     /// @param _tranche The tranche to allocate the increase in balance
+    /// @param _owner The owner whose balance should be increased
     /// @param _amount The amount by which to increase the balance
     /// @param _data Additional data attached to the minting of tokens
     /// @return A reason code related to the success of the mint operation
-    function mint(address _owner, bytes32 _tranche, uint256 _amount, bytes _data) public returns (byte reason);
+    function mint(bytes32 _tranche, address _owner, uint256 _amount, bytes _data) public returns (byte reason);
 
     /// @notice Decreases totalSupply and the corresponding amount of the specified owners tranche
-    /// @param _owner The owner whose balance should be decreased
     /// @param _tranche The tranche to allocate the decrease in balance
+    /// @param _owner The owner whose balance should be decreased
     /// @param _amount The amount by which to decrease the balance
     /// @param _data Additional data attached to the burning of tokens
     /// @return A reason code related to the success of the burn operation
-    function burn(address _owner, bytes32 _tranche, uint256 _amount, bytes _data) public returns (byte reason);
+    function burn(bytes32 _tranche, address _owner, uint256 _amount, bytes _data) public returns (byte reason);
 
     /// @notice This emits on any successful call to `mint`
     event Minted(address indexed owner, bytes32 tranche, uint256 amount, bytes data);
@@ -116,7 +116,7 @@ interface IERCPFT {
     event Burnt(address indexed owner, bytes32 tranche, uint256 amount, bytes data);
 
     /// @notice This emits on any successful transfer or minting of tokens
-    event Sent(
+    event SentTranche(
         address indexed operator,
         address indexed from,
         address indexed to,
@@ -177,14 +177,14 @@ contract PFT is IERCPFT {
     }
 
     // Returns restricted token balance
-    function balanceOfTranche(address _owner, bytes32 _tranche) public view returns (uint256) {
+    function balanceOfTranche(bytes32 _tranche, address _owner) public view returns (uint256) {
         return tranches[_owner][trancheToIndex[_owner][_tranche]].amount;
     }
 
     // Transfers tokens from the sender to the _to address, keeping the _tranche the same
-    function sendTranche(address _to, bytes32 _tranche, uint256 _amount, bytes _data) external returns (byte, bytes32) {
+    function sendTranche(bytes32 _tranche, address _to, uint256 _amount, bytes _data) external returns (byte, bytes32) {
         (byte reason, bytes32 newTranche) = _sendTranche(msg.sender, _to, _tranche, _amount, _data, '');
-        emit Sent(
+        emit SentTranche(
             address(0),
             msg.sender,
             _to,
@@ -197,7 +197,7 @@ contract PFT is IERCPFT {
         return (reason, newTranche);
     }
 
-    function _sendTranche(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data, bytes _operatorData) internal returns (byte, bytes32) {
+    function _sendTranche(bytes32 _tranche, address _from, address _to, uint256 _amount, bytes _data, bytes _operatorData) internal returns (byte, bytes32) {
 
         if (balanceOfTranche(msg.sender, _tranche) < _amount) {
             return (hex"00", bytes32(''));
@@ -231,13 +231,13 @@ contract PFT is IERCPFT {
     /// @param _operatorData Additional data attached to the transfer of tokens by the operator
     /// @return A reason code related to the success of the send operation
     /// @return The tranche to which the transferred tokens were allocated for the _to address
-    function operatorSendTranche(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data, bytes _operatorData) external returns (byte, bytes32) {
+    function operatorSendTranche(bytes32 _tranche, address _from, address _to, uint256 _amount, bytes _data, bytes _operatorData) external returns (byte, bytes32) {
         // Check operator is approved
         if ((!trancheApprovals[_from][_tranche][msg.sender]) && (!approvals[_from][msg.sender])) {
             return (hex"20", bytes32(''));
         }
         (byte reason, bytes32 newTranche) = _sendTranche(_from, _to, _tranche, _amount, _data, _operatorData);
-        emit Sent(
+        emit SentTranche(
             msg.sender,
             _from,
             _to,
@@ -328,12 +328,12 @@ contract PFT is IERCPFT {
     }
 
     /// @notice Increases totalSupply and the corresponding amount of the specified owners tranche
-    /// @param _owner The owner whose balance should be increased
     /// @param _tranche The tranche to allocate the increase in balance
+    /// @param _owner The owner whose balance should be increased
     /// @param _amount The amount by which to increase the balance
     /// @param _data Additional data attached to the minting of tokens
     /// @return A reason code related to the success of the mint operation
-    function mint(address _owner, bytes32 _tranche, uint256 _amount, bytes _data) public returns (byte reason) {
+    function mint(bytes32 _tranche, address _owner, uint256 _amount, bytes _data) public returns (byte reason) {
         if (tranches[_owner][trancheToIndex[_owner][_tranche]].amount + _amount < tranches[_owner][trancheToIndex[_owner][_tranche]].amount) {
             return (hex"10");
         }
@@ -347,7 +347,7 @@ contract PFT is IERCPFT {
         balances[_owner] = balances[_owner] + _amount;
         totalSupply = totalSupply + _amount;
         emit Minted(_owner, _tranche, _amount, _data);
-        emit Sent(
+        emit SentTranche(
             msg.sender,
             address(0),
             _owner,
@@ -361,12 +361,12 @@ contract PFT is IERCPFT {
     }
 
     /// @notice Decreases totalSupply and the corresponding amount of the specified owners tranche
-    /// @param _owner The owner whose balance should be decreased
     /// @param _tranche The tranche to allocate the decrease in balance
+    /// @param _owner The owner whose balance should be decreased
     /// @param _amount The amount by which to decrease the balance
     /// @param _data Additional data attached to the burning of tokens
     /// @return A reason code related to the success of the burn operation
-    function burn(address _owner, bytes32 _tranche, uint256 _amount, bytes _data) public returns (byte reason) {
+    function burn(bytes32 _tranche, address _owner, uint256 _amount, bytes _data) public returns (byte reason) {
         if (tranches[_owner][trancheToIndex[_owner][_tranche]].amount - _amount > tranches[_owner][trancheToIndex[_owner][_tranche]].amount) {
             return (hex"10");
         }
@@ -380,7 +380,7 @@ contract PFT is IERCPFT {
         balances[_owner] = balances[_owner] - _amount;
         totalSupply = totalSupply - _amount;
         emit Burnt(_owner, _tranche, _amount, _data);
-        emit Sent(
+        emit SentTranche(
             msg.sender,
             _owner,
             address(0),
