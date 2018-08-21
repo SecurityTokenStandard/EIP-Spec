@@ -47,7 +47,7 @@ interface IERCST is IERCPFT, IERC165 {
 
     /// @notice Used to check whether additional securities can be minted
     /// @return A boolean indicating whether additional securities can be minted
-    function canMint() public view returns (bool);
+    function mintable() public view returns (bool);
 
     /// @notice Verifies whether a transfer would succeed or not
     /// @param _from The address from which to transfer tokens
@@ -80,7 +80,7 @@ interface IERCST is IERCPFT, IERC165 {
     event Minted(address indexed owner, bytes32 tranche, uint256 amount, bytes data);
 
     /// @notice This emits on any successful call to `burn`
-    event Burnt(address indexed owner, bytes32 tranche, uint256 amount, bytes data);
+    event Burned(address indexed owner, bytes32 tranche, uint256 amount, bytes data);
 
 }
 

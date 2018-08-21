@@ -84,7 +84,7 @@ interface IERCPFT {
     /// @param _tranche The tranche for which to query the balance
     /// @param _owner An address for whom to query the balance
     /// @return The number of tokens owned by `_owner` with the metadata associated with `_tranche`, possibly zero
-    function balanceOfTranche(bytes32 _tranche, address _owner) external view returns (uint256);
+    function balanceOfByTranche(bytes32 _tranche, address _owner) external view returns (uint256);
 
     /// @notice Count all tokens tracked by this contract
     /// @return A count of all tokens tracked by this contract
@@ -118,7 +118,7 @@ interface IERCPFT {
     /// @param _data Additional data attached to the transfer of tokens
     /// @param _operatorData Additional data attached to the transfer of tokens by the operator
     /// @return The tranche to which the transferred tokens were allocated for the _to address
-    function operatorSendTranche(bytes32 _tranche, address _from, address _to, uint256 _amount, bytes _data, bytes _operatorData) external returns (bytes32[]);
+    function operatorSendByTranche(bytes32 _tranche, address _from, address _to, uint256 _amount, bytes _data, bytes _operatorData) external returns (bytes32[]);
 
     /// @notice Batch transfers the ownership of tokens from specified tranches
     /// @dev MUST revert if tokens not successfully sent
@@ -130,7 +130,7 @@ interface IERCPFT {
     /// @param _data Additional data attached to the transfer of tokens
     /// @param _operatorData Additional data attached to the transfer of tokens by the operator
     /// @return The tranche to which the transferred tokens were allocated for the _to address
-    function operatorSendTranches(bytes32[] _tranches, address[] _froms, address[] _tos, uint256[] _amounts, bytes _data, bytes _operatorData) external returns (bytes32[]);
+    function operatorSendByTranches(bytes32[] _tranches, address[] _froms, address[] _tos, uint256[] _amounts, bytes _data, bytes _operatorData) external returns (bytes32[]);
 
     /// @notice Allows enumeration over an individual owners tranches
     /// @param _owner An address over which to enumerate tranches
@@ -149,7 +149,7 @@ interface IERCPFT {
 
     /// @notice Defines a list of operators which can operate over all addresses for the specified tranche
     /// @return The list of default operators for `_tranche`
-    function defaultOperatorsTranche(bytes32 _tranche) public view returns (address[]);
+    function defaultOperatorsByTranche(bytes32 _tranche) public view returns (address[]);
 
     /// @notice Authorises an operator for all tranches of `msg.sender`
     /// @param _operator An address which is being authorised
@@ -158,7 +158,7 @@ interface IERCPFT {
     /// @notice Authorises an operator for a given tranche of `msg.sender`
     /// @param _tranche The tranche to which the operator is authorised
     /// @param _operator An address which is being authorised
-    function authorizeOperatorTranche(bytes32 _tranche, address _operator) public;
+    function authorizeOperatorByTranche(bytes32 _tranche, address _operator) public;
 
     /// @notice Revokes authorisation of an operator previously given for all tranches of `msg.sender`
     /// @param _operator An address which is being de-authorised
@@ -167,7 +167,7 @@ interface IERCPFT {
     /// @notice Revokes authorisation of an operator previously given for a specified tranche of `msg.sender`
     /// @param _tranche The tranche to which the operator is de-authorised
     /// @param _operator An address which is being de-authorised
-    function revokeOperatorTranche(bytes32 _tranche, address _operator) public;
+    function revokeOperatorByTranche(bytes32 _tranche, address _operator) public;
 
     /// @notice Determines whether `_operator` is an operator for all tranches of `_owner`
     /// @param _operator The operator to check
@@ -198,7 +198,7 @@ interface IERCPFT {
     event AuthorizedOperator(address indexed operator, address indexed owner);
 
     /// @notice This emits on any successful operator approval for a single tranche, excluding default tranche operators
-    event AuthorizedOperatorTranche(bytes32 indexed tranche, address indexed operator, address indexed owner);
+    event AuthorizedOperatorByTranche(bytes32 indexed tranche, address indexed operator, address indexed owner);
 
     /// @notice This emits on any successful revoke of an operators approval for all tranches
     event RevokedOperator(address indexed operator, address indexed owner);
