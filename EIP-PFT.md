@@ -8,7 +8,7 @@ status: Draft
 type: Standards Track
 category: ERC
 created: 2018-08-05
-require: ERC165
+require: ERC165, ERC777
 
 ---
 
@@ -63,32 +63,28 @@ In general it may be that whilst tokens are fungible under some circumstances, t
 /// @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-PFT.md
 ///  Note: the ERC-165 identifier for this interface is 0xffe8e498.
 
-interface IERCPFT {
+interface IERCPFT is IERC777 {
 
-    /// @notice A descriptive name for tokens in this contract
-    function name() external view returns (string _name);
+    /// @notice Obtain the tranche selected by the user for ERC777 compatibility
+    /// @param _tranche The tranche to set as default
+    /// @return The default tranche defined by the token creator until changed by the user or operator
+    function getDefaultTranche(address _owner) external view returns (bytes32);
 
-    /// @notice An abbreviated name for tokens in this contract
-    function symbol() external view returns (string _symbol);
+    /// @notice Allows a token owner to change their default tranche
+    /// @dev MUST modify the default tranche of msg.sender
+    /// @param _tranche The tranche to set as default
+    function setDefaultTranche(bytes32 _tranche) external;
 
-    /// @notice Any minting, burning or transferring of tokens must be at a multiple of granularity
-    /// @return The granularity at which tokens can be minted, burnt or transferred
-    function granularity() public view returns (uint256);
-
-    /// @notice Counts the sum of all tranche balances assigned to an owner
-    /// @param _owner An address for whom to query the balance
-    /// @return The number of tokens owned by `_owner`, possibly zero
-    function balanceOf(address _owner) external view returns (uint256);
+    /// @notice Allows an operator to change the default tranche for an address
+    /// @dev MUST only be called by operator approved for all tranches of the owner address
+    /// @param _tranche The tranche to set as default
+    function operatorSetDefaultTranche(bytes32 _tranche, address _owner) external;
 
     /// @notice Counts the balance associated with a specific tranche assigned to an owner
     /// @param _tranche The tranche for which to query the balance
     /// @param _owner An address for whom to query the balance
     /// @return The number of tokens owned by `_owner` with the metadata associated with `_tranche`, possibly zero
     function balanceOfByTranche(bytes32 _tranche, address _owner) external view returns (uint256);
-
-    /// @notice Count all tokens tracked by this contract
-    /// @return A count of all tokens tracked by this contract
-    function totalSupply() external view returns (uint256);
 
     /// @notice Transfers the ownership of tokens from a specified tranche from one address to another address
     /// @dev MUST revert if tokens not successfully sent
@@ -97,7 +93,7 @@ interface IERCPFT {
     /// @param _amount The amount of tokens to transfer from `_tranche`
     /// @param _data Additional data attached to the transfer of tokens
     /// @return The tranche to which the transferred tokens were allocated for the _to address
-    function sendTranche(bytes32 _tranche, address _to, uint256 _amount, bytes _data) external returns (bytes32);
+    function sendByTranche(bytes32 _tranche, address _to, uint256 _amount, bytes _data) external returns (bytes32);
 
     /// @notice Batch transfers the ownership of tokens from specified tranches
     /// @dev MUST revert if all tokens not successfully sent
@@ -107,7 +103,7 @@ interface IERCPFT {
     /// @param _amounts The amount of tokens to transfer from each `_tranche`
     /// @param _data Additional data attached to the transfer of tokens
     /// @return The tranche to which the transferred tokens were allocated for the _to address
-    function sendTranches(bytes32[] _tranches, address[] _tos, uint256[] _amounts, bytes _data) external returns (bytes32);
+    function sendByTranches(bytes32[] _tranches, address[] _tos, uint256[] _amounts, bytes _data) external returns (bytes32);
 
     /// @notice Transfers the ownership of tokens from a specified tranche from one address to another address
     /// @dev MUST revert if tokens not successfully sent
@@ -143,37 +139,19 @@ interface IERCPFT {
     /// @return The number of tranches owned by an `_owner`
     function tranchesOf(address _owner) external view returns (uint256);
 
-    /// @notice Defines a list of operators which can operate over all addresses and tranches
-    /// @return The list of default operators
-    function defaultOperators() public view returns (address[]);
-
     /// @notice Defines a list of operators which can operate over all addresses for the specified tranche
     /// @return The list of default operators for `_tranche`
     function defaultOperatorsByTranche(bytes32 _tranche) public view returns (address[]);
-
-    /// @notice Authorises an operator for all tranches of `msg.sender`
-    /// @param _operator An address which is being authorised
-    function authorizeOperator(address _operator) public;
 
     /// @notice Authorises an operator for a given tranche of `msg.sender`
     /// @param _tranche The tranche to which the operator is authorised
     /// @param _operator An address which is being authorised
     function authorizeOperatorByTranche(bytes32 _tranche, address _operator) public;
 
-    /// @notice Revokes authorisation of an operator previously given for all tranches of `msg.sender`
-    /// @param _operator An address which is being de-authorised
-    function revokeOperator(address _operator) public;
-
     /// @notice Revokes authorisation of an operator previously given for a specified tranche of `msg.sender`
     /// @param _tranche The tranche to which the operator is de-authorised
     /// @param _operator An address which is being de-authorised
     function revokeOperatorByTranche(bytes32 _tranche, address _operator) public;
-
-    /// @notice Determines whether `_operator` is an operator for all tranches of `_owner`
-    /// @param _operator The operator to check
-    /// @param _owner The owner to check
-    /// @return Whether the `_operator` is an operator for all tranches of `_owner`
-    function isOperatorFor(address _operator, address _owner) public view returns (bool);
 
     /// @notice Determines whether `_operator` is an operator for a specified tranche of `_owner`
     /// @param _tranche The tranche to check
@@ -183,7 +161,7 @@ interface IERCPFT {
     function isOperatorForTranche(bytes32 _tranche, address _operator, address _owner) public view returns (bool);
 
     /// @notice This emits on any successful transfer or minting of tokens
-    event SentTranche(
+    event SentByTranche(
         bytes32 indexed fromTranche,
         bytes32 toTranche,
         address indexed operator,
@@ -194,17 +172,17 @@ interface IERCPFT {
         bytes operatorData
     );
 
-    /// @notice This emits on any successful operator approval for all tranches, excluding default operators
-    event AuthorizedOperator(address indexed operator, address indexed owner);
+    /// @notice This emits on any increase to token supply
+    event MintedByTranche(bytes32 indexed tranche, address indexed operator, address indexed to, uint256 amount, bytes data, bytes operatorData);
+
+    /// @notice This emits on any decrease to token supply
+    event BurnedByTranche(bytes32 indexed tranche, address indexed operator, address indexed from, uint256 amount, bytes operatorData);
 
     /// @notice This emits on any successful operator approval for a single tranche, excluding default tranche operators
-    event AuthorizedOperatorByTranche(bytes32 indexed tranche, address indexed operator, address indexed owner);
-
-    /// @notice This emits on any successful revoke of an operators approval for all tranches
-    event RevokedOperator(address indexed operator, address indexed owner);
+    event AuthorizedOperatorByTranche(bytes32 indexed tranche, address indexed operator, address indexed tokenHolder);
 
     /// @notice This emits on any successful revoke of an operators approval for a single tranche
-    event RevokedOperatorTranche(bytes32 indexed tranche, address indexed operator, address indexed owner);
+    event RevokedOperatorByTranche(bytes32 indexed tranche, address indexed operator, address indexed tokenHolder);
 
 }
 ```
@@ -237,9 +215,25 @@ Given the enumerable nature of an owners tranches, implementations should avoid 
 
 In order to remain backwards compatible with ERC20 / ERC777 (and other fungible token standards) it is necessary to define what tranche or tranches are used when a `transfer` / `send` operation is executed (i.e. when not explicitly specifying the tranche).
 
-There are a variety of approaches here - the implementation could define a default tranche (e.g. "unrestricted") which is used by these operations, or the tranche could be determined dynamically in code based on the owner.
-
 If the implementation guarantees a small number of possible tranches per owner, it could be reasonable to iterate over all of an owners tranches.
+
+The token creator MUST specify a default tranche which is used by the ERC20 / ERC777 functions for all users. Each user or operator of a user's full token balance for all tranches MAY change the default tranche of the user. The ability for a user to change their default tranche allows them to change the tranche displayed in ERC20 / ERC777 wallets which are not yet ERC-PFT compatible.
+
+Here is a description of the implication for ERC777 functions:
+`send()` MUST obtain default tranche using `getDefaultTranche()`
+`operatorSend()` MUST obtain default tranche using `getDefaultTranche()`
+`burn()` MUST obtain default tranche using `getDefaultTranche()`
+`operatorBurn()` MUST obtain default tranche using `getDefaultTranche()`
+`balanceOf()` MUST count the sum of all tranche balances assigned to an owner
+`totalSupply()` MUST count all tokens tracked by this contract
+`defaultOperators()` MUST query a list of operators which can operate over all addresses and tranches
+`authorizeOperator()` MUST authorise an operator for all tranches of `msg.sender`
+`revokeOperator()` MUST revoke authorisation of an operator previously given for all tranches of `msg.sender`
+`isOperatorFor()` MUST query whether `_operator` is an operator for all tranches of `_owner`
+`event Minted()` and `event MintedByTranche()` MUST be emited for any increases in token supply
+`event Burned()` and `event BurnedByTranche()` MUST be emited for any decreases in token supply
+`event AuthorizedOperator()` MUST be emited by `authorizeOperator()`
+`event RevokedOperator()` MUST be emited by `revokeOperator()`
 
 ## Implementation
 [Link to Polymath GitHub repo w/ reference implementation]

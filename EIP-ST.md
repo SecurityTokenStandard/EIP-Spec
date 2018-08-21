@@ -76,12 +76,6 @@ interface IERCST is IERCPFT, IERC165 {
     /// @param _data Additional data attached to the burning of tokens
     function burn(bytes32 _tranche, address _owner, uint256 _amount, bytes _data) public;
 
-    /// @notice This emits on any successful call to `mint`
-    event Minted(address indexed owner, bytes32 tranche, uint256 amount, bytes data);
-
-    /// @notice This emits on any successful call to `burn`
-    event Burned(address indexed owner, bytes32 tranche, uint256 amount, bytes data);
-
 }
 
 interface IERC165 {
