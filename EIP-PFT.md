@@ -220,20 +220,20 @@ If the implementation guarantees a small number of possible tranches per owner, 
 The token creator MUST specify a default tranche which is used by the ERC20 / ERC777 functions for all users. Each user or operator of a user's full token balance for all tranches MAY change the default tranche of the user. The ability for a user to change their default tranche allows them to change the tranche displayed in ERC20 / ERC777 wallets which are not yet ERC-PFT compatible.
 
 Here is a description of the implication for ERC777 functions:
-`send()` MUST obtain default tranche using `getDefaultTranche()`
-`operatorSend()` MUST obtain default tranche using `getDefaultTranche()`
-`burn()` MUST obtain default tranche using `getDefaultTranche()`
-`operatorBurn()` MUST obtain default tranche using `getDefaultTranche()`
-`balanceOf()` MUST count the sum of all tranche balances assigned to an owner
-`totalSupply()` MUST count all tokens tracked by this contract
-`defaultOperators()` MUST query a list of operators which can operate over all addresses and tranches
-`authorizeOperator()` MUST authorise an operator for all tranches of `msg.sender`
-`revokeOperator()` MUST revoke authorisation of an operator previously given for all tranches of `msg.sender`
-`isOperatorFor()` MUST query whether `_operator` is an operator for all tranches of `_owner`
-`event Minted()` and `event MintedByTranche()` MUST be emited for any increases in token supply
-`event Burned()` and `event BurnedByTranche()` MUST be emited for any decreases in token supply
-`event AuthorizedOperator()` MUST be emited by `authorizeOperator()`
-`event RevokedOperator()` MUST be emited by `revokeOperator()`
+- `send()` MUST obtain default tranche using `getDefaultTranche()`
+- `operatorSend()` MUST obtain default tranche using `getDefaultTranche()`
+- `burn()` MUST obtain default tranche using `getDefaultTranche()`
+- `operatorBurn()` MUST obtain default tranche using `getDefaultTranche()`
+- `balanceOf()` MUST count the sum of all tranche balances assigned to an owner
+- `totalSupply()` MUST count all tokens tracked by this contract
+- `defaultOperators()` MUST query a list of operators which can operate over all addresses and tranches
+- `authorizeOperator()` MUST authorise an operator for all tranches of `msg.sender`
+- `revokeOperator()` MUST revoke authorisation of an operator previously given for all tranches of `msg.sender`
+- `isOperatorFor()` MUST query whether `_operator` is an operator for all tranches of `_owner`
+- `event Minted()` and `event MintedByTranche()` MUST be emited for any increases in token supply
+- `event Burned()` and `event BurnedByTranche()` MUST be emited for any decreases in token supply
+- `event AuthorizedOperator()` MUST be emited by `authorizeOperator()`
+- `event RevokedOperator()` MUST be emited by `revokeOperator()`
 
 ## Implementation
 [Link to Polymath GitHub repo w/ reference implementation]
