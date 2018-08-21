@@ -68,14 +68,6 @@ interface IERCST is IERCPFT, IERC165 {
     /// @param _data Additional data attached to the minting of tokens
     function mint(bytes32 _tranche, address _owner, uint256 _amount, bytes _data) public;
 
-    /// @notice Decreases totalSupply and the corresponding amount of the specified owners tranche
-    /// @dev MUST revert if tokens not successfully burned
-    /// @param _owner The owner whose balance should be decreased
-    /// @param _tranche The tranche to allocate the decrease in balance
-    /// @param _amount The amount by which to decrease the balance
-    /// @param _data Additional data attached to the burning of tokens
-    function burn(bytes32 _tranche, address _owner, uint256 _amount, bytes _data) public;
-
 }
 
 interface IERC165 {

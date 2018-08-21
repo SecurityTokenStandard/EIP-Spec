@@ -160,6 +160,25 @@ interface IERCPFT is IERC777 {
     /// @return Whether the `_operator` is an operator for a specified tranche of `_owner`
     function isOperatorForTranche(bytes32 _tranche, address _operator, address _owner) public view returns (bool);
 
+    /// @notice Decreases totalSupply and the corresponding amount of msg.sender tranche
+    /// @dev MUST revert if tokens not successfully burned
+    /// @dev MUST emit event `Burned()`
+    /// @dev MUST emit event `BurnedByTranche()`
+    /// @param _tranche The tranche to allocate the decrease in balance
+    /// @param _amount The amount by which to decrease the balance
+    /// @param _data Additional data attached to the burning of tokens by msg.sender
+    function burnByTranche(bytes32 _tranche, uint256 _amount, bytes _data) public;
+
+    /// @notice Decreases totalSupply and the corresponding amount of the specified owners tranche
+    /// @dev MUST revert if tokens not successfully burned
+    /// @dev MUST emit event `Burned()`
+    /// @dev MUST emit event `BurnedByTranche()`
+    /// @param _owner The owner whose balance should be decreased
+    /// @param _tranche The tranche to allocate the decrease in balance
+    /// @param _amount The amount by which to decrease the balance
+    /// @param _operatorData Additional data attached to the burning of tokens by the operator
+    function operatorBurnByTranche(bytes32 _tranche, address _owner, uint256 _amount, bytes _operatorData) public;
+
     /// @notice This emits on any successful transfer or minting of tokens
     event SentByTranche(
         bytes32 indexed fromTranche,
