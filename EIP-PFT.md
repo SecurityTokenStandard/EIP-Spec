@@ -54,31 +54,129 @@ Being able to associate arbitrary metadata with groups of tokens held by users i
 
 In general it may be that whilst tokens are fungible under some circumstances, they are not under others (for example restricted and non-restricted shares). Being able to define such groupings and operate on them whilst maintaining data about the overall distribution of a token irrespective of this is useful in modelling these types of assets.
 
+## Methods
+
+[WIP - complete method explanations]
+
+### Sending Tokens
+
+Token transfers always have an associated source and destination tranche, as well as the usual amounts and sender and receiver addresses.
+
+#### getDefaultTranches
+
+In order to provide compatibility with ERC777 we need to know which tranches to use when a ERC777 `send` function is executed.
+
+This function returns the tranches to use in this circumstance. For example, a security token may return the `bytes32("unrestricted")` tranche, or a simple implementation with a small set of possible tranches could just return all tranches associated with an owner.
+
+The return value can be empty which implies there is no default branch (and hence the ERC777 `send` function will throw), or return more than one tranche, in which case the ERC777 `send` function should loop over these tranches in order until the specified amount has been successfully transferred.
+
+``` js
+function getDefaultTranches(address _owner) external view returns (bytes32[]);
+```
+
+#### setDefaultTranches
+
+Allows default tranches to be set for a specified address, which will be used during ERC777 `send` function executions.
+
+This function could be open for all owners to call for themselves, or restricted to just the token owner depending on the required implementation behaviour.
+
+``` js
+function setDefaultTranche(bytes32[] _tranches) external;
+```
+
+#### balanceOfByTranche
+
+As well as querying total balances across all tranches through `balanceOf` it may be that a user of the standard wants to determine the balance of a specific tranche.
+
+``` js
+function balanceOfByTranche(bytes32 _tranche, address _owner) external view returns (uint256);
+```
+
+#### sendByTranche
+
+By extending the ERC777 standard, and providing a default tranche (through `getDefaultTranches`) it is possible to send tokens (from default branches). To send tokens from a specific tranche, the `sendByTranche` function can be used.
+
+For permissioned tokens, this function may check that the transfer is valid based on:  
+  - the `_tranche` value
+  - any additional data associated with the `_tranche` value (e.g. a lockup timestamp that may be associated with `_tranche`)
+  - any details associated with the sender or receiver of tokens (e.g. has their identity been established)
+  - the amount of tokens being transferred (e.g. does it respect any daily or other period based volume restrictions)
+  - the `_data` parameter allows the caller to supply any additional authorisation or details associated with the transfer (e.g. signed data from an authorised entity who is permissioned to authorise the transfer)
+
+This function MUST throw if the transfer of tokens is not successful for any reason.
+
+When transferring tokens from a particular tranche, it is useful to know on-chain (i.e. not just via an event being fired) the destination tranche of those tokens. The destination tranche will be determined by the implementation of this function and will vary depending on use-case.
+
+This function MUST emit a `SentByTranche` event for successful transfers.
+
+``` js
+function sendByTranches(bytes32[] _tranches, address[] _tos, uint256[] _amounts, bytes _data) external returns (bytes32);
+```
+
+### Operators
+
+Operators can be authorised for:
+  - all owners and tranches (`defaultOperators` inherited from ERC777)
+  - all owners for a specific tranche (`defaultOperatorsByTranche`)
+  - all tranches for a specific owner (`isOperatorFor` inherited from ERC777)
+  - a specific tranche for a specific owner (`isOperatorForTranche`)
+
+#### defaultOperatorsByTranche
+
+This function returns the set of default operators who are authorised for all owners and a specified tranche.
+
+``` js
+function defaultOperatorsByTranche(bytes32 _tranche) public view returns (address[]);
+```
+
+#### authorizeOperatorByTranche
+
+Allows an owner to set an operator for their tokens on a specific tranche.
+
+``` js
+function authorizeOperatorByTranche(bytes32 _tranche, address _operator) public;
+```
+
+#### revokeOperatorByTranche
+
+Allows an owner to revoke an operator for their tokens on a specific tranche.
+
+NB - it is possible the operator will retain authorisation over this owner and tranche through either `defaultOperatorsByTranche` or `defaultOperators`.
+
+``` js
+function revokeOperatorByTranche(bytes32 _tranche, address _operator) public;
+```
+
+#### isOperatorForTranche
+
+Returns whether a specified address is an operator for the given owner and tranche.
+
+This should return TRUE if the address is an operator under any of the above categories.
+
+``` js
+function isOperatorForTranche(bytes32 _tranche, address _operator, address _owner) public view returns (bool);
+```
+
 ## Specification
 
 [TODO: Specify token receiver interface]
 
-```js
+``` js
 /// @title ERC-PFT Fungible Token Metadata Standard
 /// @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-PFT.md
 ///  Note: the ERC-165 identifier for this interface is 0xffe8e498.
 
 interface IERCPFT is IERC777 {
 
-    /// @notice Obtain the tranche selected by the user for ERC777 compatibility
-    /// @param _tranche The tranche to set as default
-    /// @return The default tranche defined by the token creator until changed by the user or operator
-    function getDefaultTranche(address _owner) external view returns (bytes32);
+    /// @notice Obtain the tranches for ERC777 compatibility
+    /// @param _owner The address for which default tranches are required
+    /// @return The default tranches defined by the token creator and / or by the user or operator
+    function getDefaultTranches(address _owner) external view returns (bytes32[]);
 
     /// @notice Allows a token owner to change their default tranche
     /// @dev MUST modify the default tranche of msg.sender
-    /// @param _tranche The tranche to set as default
-    function setDefaultTranche(bytes32 _tranche) external;
-
-    /// @notice Allows an operator to change the default tranche for an address
-    /// @dev MUST only be called by operator approved for all tranches of the owner address
-    /// @param _tranche The tranche to set as default
-    function operatorSetDefaultTranche(bytes32 _tranche, address _owner) external;
+    /// @param _tranches The tranche to set as default
+    function setDefaultTranche(bytes32[] _tranches) external;
 
     /// @notice Counts the balance associated with a specific tranche assigned to an owner
     /// @param _tranche The tranche for which to query the balance

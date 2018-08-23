@@ -20,9 +20,51 @@ A standard interface for representing securities and their ownership.
 
 Extends EIP-PFT to provide additional methods for verifying transfers and capturing data about the security.
 
+## Methods
+
+### getDocument / setDocument
+
+These functions are used to manage a library of documents associated with the token. These documents can be legal documents, or other reference materials.
+
+A document is associated with a short name (represented as a `bytes32`) and can optionally have a hash of the document contents associated with it on-chain.
+
+```
+function getDocument(bytes32 _name) public view returns (string, bytes32);
+function setDocument(bytes32 _name, string _uri, bytes32 _documentHash) public;
+```
+
+### checkSendByTranche
+
+Transfers of securities may fail for a number of reasons, for example relating to:
+  - the identity of the sender or receiver of the tokens
+  - limits placed on the specific tokens being transferred (i.e. limits associated with the tranche of the tokens being tranferred)
+  - limits related to the overall state of the token (i.e. total number of investors)
+
+The standard provides an on-chain function to determine whether a transfer will succeed, and return details indicating the reason if the transfer is not valid.
+
+These rules can either be defined using smart contracts and on-chain data, or rely on `_data` passed as part of the `sendByTranche` function which could represent authorisation for the transfer (e.g. a signed message by a transfer agent attesting to the validity of this specific transfer).
+
+The function will return both a ESC (Ethereum Status Code) following the EIP-1066 standard, and an additional `bytes32` parameter that can be used to define application specific reason codes with additional details (for example the transfer restriction rule responsible for making the send operation invalid).
+
+It also returns the destination tranche of the tokens being transferred in an analogous way to `sendByTranche`.
+
+``` js
+function checkSendByTranche(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data) public view returns (byte, bytes32, bytes32);
+```
+
+### mintable
+
+A security token issuer can specify that minting has finished for the token (i.e. no new tokens can be minted).
+
+If a token returns FALSE for `mintable()` then it MUST always return FALSE in the future.
+
+``` js
+function mintable() public view returns (bool);
+```
+
 ## Specification
 
-```js
+``` js
 /// @title ERC-ST Fungible Token Metadata Standard
 /// @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-ST.md
 ///  Note: the ERC-165 identifier for this interface is 0x25702e0a.
@@ -41,10 +83,6 @@ interface IERCST is IERCPFT, IERC165 {
     /// @param _documentHash A hash of the document content (optional - set to 0x0 if not required)
     function setDocument(bytes32 _name, string _uri, bytes32 _documentHash) public;
 
-    /// @notice Used to indicate that no more securities can be issued (irreversible)
-    /// @param _declaration A signed statement indicating that the caller acknowledges that this action is irreversible
-    function finishMinting(bytes32 _declaration) public;
-
     /// @notice Used to check whether additional securities can be minted
     /// @return A boolean indicating whether additional securities can be minted
     function mintable() public view returns (bool);
@@ -58,7 +96,7 @@ interface IERCST is IERCPFT, IERC165 {
     /// @return A reason code related to the success or failure of the send operation following the specification
     /// @return Arbitrary data a token implementation can append as further explanation for the reason code
     /// @return The tranche to which the transferred tokens were allocated for the _to address
-    function verifySendTranche(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data) public view returns (byte, bytes32, bytes32);
+    function checkSendByTranche(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data) public view returns (byte, bytes32, bytes32);
 
     /// @notice Increases totalSupply and the corresponding amount of the specified owners tranche
     /// @dev MUST revert if tokens not successfully minted
@@ -66,7 +104,7 @@ interface IERCST is IERCPFT, IERC165 {
     /// @param _tranche The tranche to allocate the increase in balance
     /// @param _amount The amount by which to increase the balance
     /// @param _data Additional data attached to the minting of tokens
-    function mint(bytes32 _tranche, address _owner, uint256 _amount, bytes _data) public;
+    function mintByTranche(bytes32 _tranche, address _owner, uint256 _amount, bytes _data) public;
 
 }
 
