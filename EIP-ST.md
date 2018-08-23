@@ -22,7 +22,7 @@ Extends EIP-PFT to provide additional methods for verifying transfers and captur
 
 ## Specification
 
-```js
+``` solidity
 /// @title ERC-ST Fungible Token Metadata Standard
 /// @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-ST.md
 ///  Note: the ERC-165 identifier for this interface is 0x25702e0a.
@@ -68,16 +68,6 @@ interface IERCST is IERCPFT, IERC165 {
     /// @param _data Additional data attached to the minting of tokens
     function mint(bytes32 _tranche, address _owner, uint256 _amount, bytes _data) public;
 
-}
-
-interface IERC165 {
-    /// @notice Query if a contract implements an interface
-    /// @param interfaceID The interface identifier, as specified in ERC-165
-    /// @dev Interface identification is specified in ERC-165. This function
-    ///  uses less than 30,000 gas.
-    /// @return `true` if the contract implements `interfaceID` and
-    ///  `interfaceID` is not 0xffffffff, `false` otherwise
-    function supportsInterface(bytes4 interfaceID) external view returns (bool);
 }
 ```
 
