@@ -28,7 +28,7 @@ These functions are used to manage a library of documents associated with the to
 
 A document is associated with a short name (represented as a `bytes32`) and can optionally have a hash of the document contents associated with it on-chain.
 
-```
+``` solidity
 function getDocument(bytes32 _name) public view returns (string, bytes32);
 function setDocument(bytes32 _name, string _uri, bytes32 _documentHash) public;
 ```
@@ -48,7 +48,7 @@ The function will return both a ESC (Ethereum Status Code) following the EIP-106
 
 It also returns the destination tranche of the tokens being transferred in an analogous way to `sendByTranche`.
 
-``` js
+``` solidity
 function checkSendByTranche(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data) public view returns (byte, bytes32, bytes32);
 ```
 
@@ -58,13 +58,13 @@ A security token issuer can specify that minting has finished for the token (i.e
 
 If a token returns FALSE for `mintable()` then it MUST always return FALSE in the future.
 
-``` js
+``` solidity
 function mintable() public view returns (bool);
 ```
 
 ## Specification
 
-``` js
+``` solidity
 /// @title ERC-ST Fungible Token Metadata Standard
 /// @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-ST.md
 ///  Note: the ERC-165 identifier for this interface is 0x25702e0a.
@@ -106,16 +106,6 @@ interface IERCST is IERCPFT, IERC165 {
     /// @param _data Additional data attached to the minting of tokens
     function mintByTranche(bytes32 _tranche, address _owner, uint256 _amount, bytes _data) public;
 
-}
-
-interface IERC165 {
-    /// @notice Query if a contract implements an interface
-    /// @param interfaceID The interface identifier, as specified in ERC-165
-    /// @dev Interface identification is specified in ERC-165. This function
-    ///  uses less than 30,000 gas.
-    /// @return `true` if the contract implements `interfaceID` and
-    ///  `interfaceID` is not 0xffffffff, `false` otherwise
-    function supportsInterface(bytes4 interfaceID) external view returns (bool);
 }
 ```
 

@@ -70,7 +70,7 @@ This function returns the tranches to use in this circumstance. For example, a s
 
 The return value can be empty which implies there is no default branch (and hence the ERC777 `send` function will throw), or return more than one tranche, in which case the ERC777 `send` function should loop over these tranches in order until the specified amount has been successfully transferred.
 
-``` js
+``` solidity
 function getDefaultTranches(address _owner) external view returns (bytes32[]);
 ```
 
@@ -80,7 +80,7 @@ Allows default tranches to be set for a specified address, which will be used du
 
 This function could be open for all owners to call for themselves, or restricted to just the token owner depending on the required implementation behaviour.
 
-``` js
+``` solidity
 function setDefaultTranche(bytes32[] _tranches) external;
 ```
 
@@ -88,7 +88,7 @@ function setDefaultTranche(bytes32[] _tranches) external;
 
 As well as querying total balances across all tranches through `balanceOf` it may be that a user of the standard wants to determine the balance of a specific tranche.
 
-``` js
+``` solidity
 function balanceOfByTranche(bytes32 _tranche, address _owner) external view returns (uint256);
 ```
 
@@ -109,7 +109,7 @@ When transferring tokens from a particular tranche, it is useful to know on-chai
 
 This function MUST emit a `SentByTranche` event for successful transfers.
 
-``` js
+``` solidity
 function sendByTranches(bytes32[] _tranches, address[] _tos, uint256[] _amounts, bytes _data) external returns (bytes32);
 ```
 
@@ -125,7 +125,7 @@ Operators can be authorised for:
 
 This function returns the set of default operators who are authorised for all owners and a specified tranche.
 
-``` js
+``` solidity
 function defaultOperatorsByTranche(bytes32 _tranche) public view returns (address[]);
 ```
 
@@ -133,7 +133,7 @@ function defaultOperatorsByTranche(bytes32 _tranche) public view returns (addres
 
 Allows an owner to set an operator for their tokens on a specific tranche.
 
-``` js
+``` solidity
 function authorizeOperatorByTranche(bytes32 _tranche, address _operator) public;
 ```
 
@@ -143,7 +143,7 @@ Allows an owner to revoke an operator for their tokens on a specific tranche.
 
 NB - it is possible the operator will retain authorisation over this owner and tranche through either `defaultOperatorsByTranche` or `defaultOperators`.
 
-``` js
+``` solidity
 function revokeOperatorByTranche(bytes32 _tranche, address _operator) public;
 ```
 
@@ -153,7 +153,7 @@ Returns whether a specified address is an operator for the given owner and tranc
 
 This should return TRUE if the address is an operator under any of the above categories.
 
-``` js
+``` solidity
 function isOperatorForTranche(bytes32 _tranche, address _operator, address _owner) public view returns (bool);
 ```
 
@@ -161,7 +161,7 @@ function isOperatorForTranche(bytes32 _tranche, address _operator, address _owne
 
 [TODO: Specify token receiver interface]
 
-``` js
+``` solidity
 /// @title ERC-PFT Fungible Token Metadata Standard
 /// @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-PFT.md
 ///  Note: the ERC-165 identifier for this interface is 0xffe8e498.
