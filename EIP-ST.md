@@ -33,7 +33,7 @@ function getDocument(bytes32 _name) public view returns (string, bytes32);
 function setDocument(bytes32 _name, string _uri, bytes32 _documentHash) public;
 ```
 
-### checkSendByTranche
+### checkSecurityTokenSend
 
 Transfers of securities may fail for a number of reasons, for example relating to:
   - the identity of the sender or receiver of the tokens
@@ -49,7 +49,7 @@ The function will return both a ESC (Ethereum Status Code) following the EIP-106
 It also returns the destination tranche of the tokens being transferred in an analogous way to `sendByTranche`.
 
 ``` solidity
-function checkSendByTranche(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data) public view returns (byte, bytes32, bytes32);
+function checkSecurityTokenSend(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data) public view returns (byte, bytes32, bytes32);
 ```
 
 ### mintable
@@ -87,16 +87,16 @@ interface IERCST is IERCPFT, IERC165 {
     /// @return A boolean indicating whether additional securities can be minted
     function mintable() public view returns (bool);
 
-    /// @notice Verifies whether a transfer would succeed or not
-    /// @param _from The address from which to transfer tokens
-    /// @param _to The address to which to transfer tokens
-    /// @param _tranche The tranche from which to transfer tokens
-    /// @param _amount The amount of tokens to transfer from `_tranche`
-    /// @param _data Additional data attached to the transfer of tokens
+    /// @notice Verifies whether sending a token would succeed or not
+    /// @param _from The address from which to send tokens
+    /// @param _to The address to which to send tokens
+    /// @param _tranche The tranche from which to send tokens
+    /// @param _amount The amount of tokens to send from `_tranche`
+    /// @param _data Additional data attached to the send
     /// @return A reason code related to the success or failure of the send operation following the specification
     /// @return Arbitrary data a token implementation can append as further explanation for the reason code
-    /// @return The tranche to which the transferred tokens were allocated for the _to address
-    function checkSendByTranche(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data) public view returns (byte, bytes32, bytes32);
+    /// @return The tranche to which the sent tokens were allocated for the _to address
+    function checkSecurityTokenSend(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data) public view returns (byte, bytes32, bytes32);
 
     /// @notice Increases totalSupply and the corresponding amount of the specified owners tranche
     /// @dev MUST revert if tokens not successfully minted
