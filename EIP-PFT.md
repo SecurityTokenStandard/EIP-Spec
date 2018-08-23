@@ -58,7 +58,7 @@ In general it may be that whilst tokens are fungible under some circumstances, t
 
 [TODO: Specify token receiver interface]
 
-```js
+``` solidity
 /// @title ERC-PFT Fungible Token Metadata Standard
 /// @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-PFT.md
 ///  Note: the ERC-165 identifier for this interface is 0xffe8e498.
