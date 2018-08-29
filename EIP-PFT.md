@@ -68,7 +68,7 @@ In order to provide compatibility with ERC777 we need to know which tranches to 
 
 This function returns the tranches to use in this circumstance. For example, a security token may return the `bytes32("unrestricted")` tranche, or a simple implementation with a small set of possible tranches could just return all tranches associated with an owner.
 
-The return value can be empty which implies there is no default branch (and hence the ERC777 `send` function will throw), or return more than one tranche, in which case the ERC777 `send` function should loop over these tranches in order until the specified amount has been successfully transferred.
+The return value can be empty which implies there is no default tranche (and hence the ERC777 `send` function will throw), or return more than one tranche, in which case the ERC777 `send` function should loop over these tranches in order until the specified amount has been successfully transferred.
 
 ``` solidity
 function getDefaultTranches(address _owner) external view returns (bytes32[]);
@@ -94,7 +94,7 @@ function balanceOfByTranche(bytes32 _tranche, address _owner) external view retu
 
 #### sendByTranche
 
-By extending the ERC777 standard, and providing a default tranche (through `getDefaultTranches`) it is possible to send tokens (from default branches). To send tokens from a specific tranche, the `sendByTranche` function can be used.
+By extending the ERC777 standard, and providing a default tranche (through `getDefaultTranches`) it is possible to send tokens (from default tranches). To send tokens from a specific tranche, the `sendByTranche` function can be used.
 
 For permissioned tokens, this function may check that the transfer is valid based on:  
   - the `_tranche` value

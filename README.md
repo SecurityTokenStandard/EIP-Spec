@@ -30,11 +30,8 @@ Moving the issuance, trading and lifecycle events of a security onto a public le
 A security token requires the following features:
 
   - ability to associate metadata with specific securities which are otherwise fungible
-
   - flexibility in permissioning and control
-
   - ability to moderate transfers of securities using either an on-chain codified rule set or off-chain approvals
-
   - association of public data to the security (e.g. issuer details, legal documentation)
 
 ## Partially-Fungible Token
