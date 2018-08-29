@@ -18,7 +18,7 @@ A standard interface for representing securities and their ownership.
 
 ## Abstract
 
-Extends EIP-PFT to provide additional methods for verifying transfers and capturing data about the security.
+Extends EIP-PFT to provide additional methods to query if sending tokens would be successful and capturing data about the security.
 
 ## Methods
 
@@ -113,7 +113,7 @@ interface IERCST is IERCPFT, IERC165 {
 
 This standard extends EIP-PFT to add additional features required to represent securities.
 
-The result of a call to `verifySendTranche` may change depending on on-chain state (including block numbers or timestamps) and possibly off-chain oracles. If it is called, not as part of a transfer itself, but in a speculative fashion (i.e. not as part of a transfer), it should be considered a view function that does not modify any state.
+The result of a call to `checkSecurityTokenSend` may change depending on on-chain state (including block numbers or timestamps) and possibly off-chain oracles. If it is called, not as part of a transfer itself, but in a speculative fashion (i.e. not as part of a transfer), it should be considered a view function that does not modify any state.
 
 ### EIP 165 Compliance
 
@@ -139,27 +139,26 @@ These conditions could be related to metadata of the shares being transferred (i
 
 For utility ERC20 / ERC77 tokens the `balanceOf` and `allowance` functions provide a way to check that a transfer is likely to succeed before executing the transfer which can be executed both on and off-chain.
 
-For tokens representing securities we introduce a function `verifySendTranche` which provides a more general purpose way to achieve this when the reasons for failure are more complex and a function of the whole transfer (i.e. includes any data sent with the transfer and the receiver of the securities).
+For tokens representing securities we introduce a function `checkSecurityTokenSend` which provides a more general purpose way to achieve this when the reasons for failure are more complex and a function of the whole transfer (i.e. includes any data sent with the transfer and the receiver of the securities).
 
 In order to provide a richer result than just true or false, a byte return code is returned. This allows us to give an reason for why the transfer failed, or at least which category of reason the failure was in.
 
 ### Reason Codes
 
-Sending a security token could fail for any number of reasons. To improve the user experience, `verifySendTranche` MUST return a reason code on success or failure based on the EIP-1066 application-specific status codes specified below. An implementation can also return arbitrary data as a `bytes32` to provide additional information not captured by the reason code.
+Sending a security token could fail for any number of reasons. To improve the user experience, `checkSecurityTokenSend` MUST return a reason code on success or failure based on the EIP-1066 application-specific status codes specified below. An implementation can also return arbitrary data as a `bytes32` to provide additional information not captured by the reason code.
 
 | Code   | Reason                                                        |
 | ------ | ------------------------------------------------------------- |
 | `0xA0` | Transfer Verified - Unrestricted                              |
-| `0xA1` | Transfer Verified - Rule Engine Approval for Restricted Token |
-| `0xA2` | Transfer Verified - Off-Chain Approval for Restricted Token   |
+| `0xA1` | Transfer Verified - On-Chain approval for restricted token    |
+| `0xA2` | Transfer Verified - Off-Chain approval for restricted token   |
 | `0xA3` | Transfer Blocked - Sender lockup period not ended             |
 | `0xA4` | Transfer Blocked - Sender balance insufficient                |
-| `0xA5` | Transfer Blocked - Sender not whitelisted                     |
-| `0xA6` | Transfer Blocked - Receiver not whitelisted                   |
-| `0xA6` | Transfer Blocked - Identity restriction                       |
-| `0xA7` | Transfer Blocked - Token restriction                          |
-| `0xA8` | Transfer Blocked - Token granularity                          |
-| `0xA9` |                                                               |
+| `0xA5` | Transfer Blocked - Sender not eligible                        |
+| `0xA6` | Transfer Blocked - Receiver not eligible                      |
+| `0xA7` | Transfer Blocked - Identity restriction                       |
+| `0xA8` | Transfer Blocked - Token restriction                          |
+| `0xA9` | Transfer Blocked - Token granularity                          |
 | `0xAA` |                                                               |
 | `0xAB` |                                                               |
 | `0xAC` |                                                               |
@@ -171,11 +170,11 @@ Sending a security token could fail for any number of reasons. To improve the us
 
 ### ERC20 / ERC777 Backwards Compatibility
 
-If the EIP-PFT implementation is ERC20 / ERC777 compatible (by adding send / transfer functions which define default tranches to operate on) then the function `verifySend` should be correspondingly implemented to use the same default logic.
+If the EIP-PFT implementation is ERC20 / ERC777 compatible (by adding send / transfer functions which define default tranches to operate on) then the function `checkSecurityTokenSend` should be correspondingly implemented to use the same default logic.
 
 ### On-chain vs. Off-chain Transfer Restrictions
 
-Transfers may be restricted or unrestricted based on rules that form part of the code for the securities contract. These rules may be self-contained (e.g. a rule which limits the maximum number of investors in the security) or require off-chain inputs (e.g. an explicit broker approval for the trade). To facilitate the latter, the sendTranche and verifySendTranche functions take an additional `bytes _data` parameter which can be used by a token owner or operator to provide additional data for the contract to interpret when considering whether the transfer should be allowed.
+Transfers may be restricted or unrestricted based on rules that form part of the code for the securities contract. These rules may be self-contained (e.g. a rule which limits the maximum number of investors in the security) or require off-chain inputs (e.g. an explicit broker approval for the trade). To facilitate the latter, the sendTranche and `checkSecurityTokenSend` functions take an additional `bytes _data` parameter which can be used by a token owner or operator to provide additional data for the contract to interpret when considering whether the transfer should be allowed.
 
 The specification for this data is outside the scope of this standard and would be implementation specific.
 
