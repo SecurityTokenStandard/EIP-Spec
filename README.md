@@ -6,9 +6,9 @@ Increase Security Token adoption by creating a standard which provides specifica
 
 This specification will increase adoption by allowing standardization and therefore lower cost of off-chain processes needed to fulfill compliance requirements.
 
-These off-chain processes are required because the current state of blockchain technology cannot provide guarantees that all the actions of a security issuer are compliant. This standard therefore is limited to providing the possibility for on-chain enforcement of investor actions such as trading.
+These off-chain processes are required because the current state of blockchain technology cannot provide guarantees that all the actions of a security issuer are compliant. This standard therefore is limited to providing the possibility for on-chain enforcement of certain investor actions.
 
-This standard is meant to be a foundational block upon which additional standards will be established. As such, we designed it to be generalizable across jurisdictions and asset classes.
+This standard is meant to be a foundational block upon which additional standards will be established. As such, it was designed to be generalizable across jurisdictions and asset classes.
 
 ## Requirements
 
