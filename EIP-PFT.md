@@ -8,7 +8,7 @@ status: Draft
 type: Standards Track
 category: ERC
 created: 2018-08-05
-require: ERC165, ERC777
+require: ERC777
 
 ---
 
@@ -164,7 +164,6 @@ function isOperatorForTranche(bytes32 _tranche, address _operator, address _owne
 ``` solidity
 /// @title ERC-PFT Fungible Token Metadata Standard
 /// @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-PFT.md
-///  Note: the ERC-165 identifier for this interface is 0xffe8e498.
 
 interface IERCPFT is IERC777 {
 
@@ -310,9 +309,11 @@ interface IERCPFT is IERC777 {
 
 [TODO - Add more detail to the below section]
 
-### EIP 165 Compliance
+### ERC820 Interface Registration
 
-A Partially-Fungible Token MUST implement the ERC-165 interface and register as IERC165, and IERCPFT compliant. A token MAY register as ERC20 and ERC777 compliant if the appropriate functions are implemented based on the spec defined in ERC20 / ERC777 Backwards Compatibility.
+A Partially-Fungible Token MUST register its interface in the ERC820 registry contract using the label `keccak256("ERC####Token")` and `keccak256("ERC777Token")` (pending assignment from eip). The token contract MAY register as `keccak256("ERC20Token")` if the appropriate functions are implemented based on the spec defined in ERC20 backwards compatibility.
+
+To receive or send a Partially-Fungible Token, the account address MUST be registered in the ERC820 registry contract as `keccak256("ERC####TokensSender")` or `keccak256("ERC####TokensRecipient")`.
 
 ### Rationale
 

@@ -8,7 +8,7 @@ status: Draft
 type: Standards Track
 category: ERC
 created: 2018-08-05
-require: ERC1066, ERC165, ERC-PFT
+require: ERC1066, ERC-PFT
 
 ---
 
@@ -67,9 +67,8 @@ function mintable() public view returns (bool);
 ``` solidity
 /// @title ERC-ST Fungible Token Metadata Standard
 /// @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-ST.md
-///  Note: the ERC-165 identifier for this interface is 0x25702e0a.
 
-interface IERCST is IERCPFT, IERC165 {
+interface IERCST is IERCPFT {
 
     /// @notice Returns the URI associated with a named document
     /// @param _name The name of the document to fetch the URI for
@@ -115,9 +114,9 @@ This standard extends EIP-PFT to add additional features required to represent s
 
 The result of a call to `checkSecurityTokenSend` may change depending on on-chain state (including block numbers or timestamps) and possibly off-chain oracles. If it is called, not as part of a transfer itself, but in a speculative fashion (i.e. not as part of a transfer), it should be considered a view function that does not modify any state.
 
-### EIP 165 Compliance
+### ERC820 Interface Registration
 
-A Security Token MUST implement the ERC-165 interface and register as IERC165, IERCPFT, and IERCST compliant. A token MAY register as ERC20 and ERC777 compliant if the appropriate functions are implemented based on the spec defined in ERC20 / ERC777 Backwards Compatibility.
+A Security Token MUST register its interface in the ERC820 registry contract using the label `keccak256("ERC####Token")`, `keccak256("ERC####Token")` and `keccak256("ERC777Token")` (pending assignment from eip). The token contract MAY register as `keccak256("ERC20Token")` if the appropriate functions are implemented based on the spec defined in ERC20 Backwards Compatibility of ERC-PFT.
 
 ### Forced Transfers
 
