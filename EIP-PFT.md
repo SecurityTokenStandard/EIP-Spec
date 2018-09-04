@@ -22,7 +22,7 @@ Describes an interface to support an owners tokens being grouped into tranches, 
 
 Tokens are operated upon at a tranche granularity, but data about the overall supply of tokens and overall balances of owners is also tracked.
 
-Whilst this standard is not directly backwards compatible with ERC20 / ERC777, it is fairly trivial to provide implementations of the ERC20 / ERC777 standard functions based on this standard.
+This standard is an extension of ERC777 and therefore is implicitly compatible with ERC20 and ERC777.
 
 [TODO - Should we include the below section or is this covered elsewhere]
 
