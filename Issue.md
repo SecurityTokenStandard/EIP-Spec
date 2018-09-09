@@ -41,11 +41,11 @@ The following requirements have been compiled following discussions with parties
 
 There are many types of securities which, although they represent the same underlying asset, need to have differentiating data tied to them.
 
-This additional metadata implicitly renders these securities non-fungible, but in practice this data is usually applied to a subset of the security rather than an individual security. The ability to partition a token holders balance into tranches, each with separate metadata is addressed in the Partially-Fungible Token section.
+This additional metadata implicitly renders these securities non-fungible, but in practice this data is usually applied to a subset of the security rather than an individual security. The ability to partition a token holder's balance into tranches, each with separate metadata is addressed in the Partially-Fungible Token section.
 
-For example a token holders balance may be split into those tokens minted during the primary issuance, and those received through secondary trading.
+For example a token holder's balance may be split in two: Those tokens minted during the primary issuance, and those received through secondary trading.
 
-Security token transfers can reference this metadata in order to apply additional logic to determine whether or not the transfer is valid, and the metadata that should be associated with the tokens once transferred into the receivers balance.
+Security token transfers can reference this metadata in order to apply additional logic to determine whether or not the transfer is valid, and the metadata that should be associated with the tokens once transferred into the receiver's balance.
 
 --
 
@@ -53,11 +53,11 @@ Transfers of securities can fail for a variety of reasons in contrast to utility
 
 These conditions could be related to metadata of the securities being transferred (i.e. whether they are subject to a lock-up period), the identity of the sender and receiver of the securities (i.e. whether they have been through a KYC process, whether they are accredited or an affiliate of the issuer) or for reasons unrelated to the specific transfer but instead set at the token level (i.e. the token contract enforces a maximum number of investors or a cap on the percentage held by any single investor).
 
-For ERC20 / ERC777 tokens the `balanceOf` and `allowance` functions provide a way to check that a transfer is likely to succeed before executing the transfer which can be executed both on and off-chain.
+For ERC20 / ERC777 tokens, the `balanceOf` and `allowance` functions provide a way to check that a transfer is likely to succeed before executing the transfer, which can be executed both on and off-chain.
 
-For tokens representing securities we introduce a function `checkSecurityTokenSend` which provides a more general purpose way to achieve this when the reasons for failure are more complex and a function of the whole transfer (i.e. includes any data sent with the transfer and the receiver of the securities).
+For tokens representing securities we introduce a function `checkSecurityTokenSend` which provides a more general purpose way to achieve this when the reasons for failure are more complex; and a function of the whole transfer (i.e. includes any data sent with the transfer and the receiver of the securities).
 
-In order to provide a richer result than just true or false, a byte return code is returned. This allows us to give an reason for why the transfer failed, or at least which category of reason the failure was in. The ability to query documents and the expected success of a transfer is included in Security Token section.
+In order to provide a richer result than just true or false, a byte return code is returned. This allows us to give a reason for why the transfer failed, or at least which category of reason the failure was in. The ability to query documents and the expected success of a transfer is included in Security Token section.
 
 --
 
@@ -105,11 +105,11 @@ function balanceOfByTranche(bytes32 _tranche, address _tokenHolder) external vie
 
 By extending the ERC777 standard, and providing a default tranche (through `getDefaultTranches`) it is possible to send tokens (from default tranches). To send tokens from a specific tranche, the `sendByTranche` function can be used.
 
-As an example, a permissioned token may use tranche metadata to enfore transfer restrictions based on:
+As an example, a permissioned token may use tranche metadata to enforce transfer restrictions based on:
   - the `_tranche` value
   - any additional data associated with the `_tranche` value (e.g. a lockup timestamp that may be associated with `_tranche`)
   - any details associated with the sender or receiver of tokens (e.g. has their identity been established)
-  - the amount of tokens being transferred (e.g. does it respect any daily or other period based volume restrictions)
+  - the amount of tokens being transferred (e.g. does it respect any daily or other period-based volume restrictions)
   - the `_data` parameter allows the caller to supply any additional authorisation or details associated with the transfer (e.g. signed data from an authorised entity who is permissioned to authorise the transfer)
 
 Other use-cases include tracking provenance of tokens by associating previous holders with destination tranches.
