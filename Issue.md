@@ -163,6 +163,21 @@ This should return TRUE if the address is an operator under any of the above cat
 function isOperatorForTranche(bytes32 _tranche, address _operator, address _owner) public view returns (bool);
 ```
 
+#### operatorSendByTranche
+
+Allows an operator to send security tokens on behalf of a token holder.
+
+The function SHOULD return the `bytes32 _tranche` of the receiver.
+
+The `bytes32 _tranche` of the receiver can be defined in the `bytes _data` if not generated on-chain.
+
+This function MUST revert if called by an address lacking the appropriate approval as defined by `isOperatorForTranche`.
+
+``` solidity
+function operatorSendByTranche(bytes32 _tranche, address _from, address _to, uint256 _amount, bytes _data, bytes _operatorData) external returns (bytes32);
+function operatorSendByTranches(bytes32[] _tranches, address[] _froms, address[] _tos, uint256[] _amounts, bytes _data, bytes _operatorData) external returns (bytes32[]);
+```
+
 ### Interface
 
 [TODO: Specify token receiver interface]
@@ -177,7 +192,7 @@ interface IERCPFT is IERC777 {
     function balanceOfByTranche(bytes32 _tranche, address _owner) external view returns (uint256);
     function sendByTranche(bytes32 _tranche, address _to, uint256 _amount, bytes _data) external returns (bytes32);
     function sendByTranches(bytes32[] _tranches, address[] _tos, uint256[] _amounts, bytes _data) external returns (bytes32);
-    function operatorSendByTranche(bytes32 _tranche, address _from, address _to, uint256 _amount, bytes _data, bytes _operatorData) external returns (bytes32[]);
+    function operatorSendByTranche(bytes32 _tranche, address _from, address _to, uint256 _amount, bytes _data, bytes _operatorData) external returns (bytes32);
     function operatorSendByTranches(bytes32[] _tranches, address[] _froms, address[] _tos, uint256[] _amounts, bytes _data, bytes _operatorData) external returns (bytes32[]);
     function trancheByIndex(address _owner, uint256 _index) external view returns (bytes32);
     function tranchesOf(address _owner) external view returns (uint256);
