@@ -16,13 +16,11 @@ require: ERC-777, ERC-1066
 
 ## Motivation
 
-Accelerate Security Token adoption by creating a standard which provides specifications for how a compliant token can be interfaced with and behaves on-chain.
+Accelerate the issuance and management of securities on the Ethereum blockchain by specifying a standard interface through which security tokens can be operated on and interrogated by all relevant parties.
 
-This specification will increase adoption through standardization of off-chain processes needed to fulfill compliance requirements.
+Security tokens differ materially from other token use-cases, with more complex interactions between off-chain and on-chain actors, and considerable regulatory scrutiny.
 
-These off-chain processes are required because the current state of blockchain technology cannot provide guarantees that all the actions of a security token issuer are compliant. This standard therefore is limited to providing the possibility for on-chain enforcement of certain investor actions.
-
-This standard is meant to be a foundational block upon which additional standards will be established. As such, it was designed to be generalizable across jurisdictions and asset classes.
+Security tokens should be able to represent any asset class, issued and managed across any jurisdiction, with the associated regulatory restrictions.
 
 ## Requirements
 
@@ -33,32 +31,37 @@ The following requirements have been compiled following discussions with parties
 - MUST have a standard interface to query if a transfer would be successful and return a reason for failure.
 - MUST be able to perform forced transfer for legal action or fund recovery.
 - MUST emit standard events for minting and burning.
-- MUST be able to attach metadata to a subsets of a user's balance such as special shareholder rights, data for transfer restrictions or document for disclosure purposes.
-- MUST be able to modify metadata at time of transfer according to token holder identity (including but not limited to investor profile such as jurisdiction or accreditation status).
-- MAY be able to programmatically modify metadata at time of transfer using on-chain rule engine.
-- MAY require all transfers to be signed by approved parties off-chain.
+- MUST be able to attach metadata to a subset of a user's balance such as special shareholder rights or data for transfer restrictions.
+- MUST be able to modify metadata at time of transfer based on off-chain data, on-chain data and the parameters of the transfer.
+- MAY require signed data to be passed into a transfer transaction in order to validate it on-chain.
 - SHOULD NOT restrict the range of asset classes across jurisdictions which can be represented.
 - SHOULD be ERC20 and ERC777 compatible.
 
 ## Abstract
 
-There are many types of securities which, although they represent the same asset, need to have differentiating data tied to them.
+There are many types of securities which, although they represent the same underlying asset, need to have differentiating data tied to them.
 
-This additional metadata implicitly renders these securities non-fungible, but in practice this data is usually applied to groups of securities rather than individual securities. The ability to include metadata with subsections of a token holder balance is addressed in Partially-Fungible Token section.
+This additional metadata implicitly renders these securities non-fungible, but in practice this data is usually applied to a subset of the security rather than an individual security. The ability to partition a token holders balance into tranches, each with separate metadata is addressed in the Partially-Fungible Token section.
 
-For example tokens may be split into those minted during the primary issuance, and those received through secondary trading.
+For example a token holders balance may be split into those tokens minted during the primary issuance, and those received through secondary trading.
 
-Having this data allows token contracts to implement sophisticated logic to govern transfers from a particular tranche and determine the tranche into which to deposit the receivers balance.
+Security token transfers can reference this metadata in order to apply additional logic to determine whether or not the transfer is valid, and the metadata that should be associated with the tokens once transferred into the receivers balance.
 
-Transfers of securities can fail for a number of reasons in contrast to utility tokens which generally only require the sender to have a sufficient balance.
+--
 
-These conditions could be related to metadata of the shares being transferred (i.e. whether they are subject to a lock-up period), the identity of the sender and receiver of the securities (i.e. whether they have been through a KYC process and whether they are accredited or an affiliate of the issuer) or for reasons unrelated to the specific transfer but instead set at the security level (i.e. the security enforces a maximum number of investors or a cap on the percentage held by any single investor).
+Transfers of securities can fail for a variety of reasons in contrast to utility tokens which generally only require the sender to have a sufficient balance.
 
-For utility ERC20 / ERC777 tokens the `balanceOf` and `allowance` functions provide a way to check that a transfer is likely to succeed before executing the transfer which can be executed both on and off-chain.
+These conditions could be related to metadata of the securities being transferred (i.e. whether they are subject to a lock-up period), the identity of the sender and receiver of the securities (i.e. whether they have been through a KYC process, whether they are accredited or an affiliate of the issuer) or for reasons unrelated to the specific transfer but instead set at the token level (i.e. the token contract enforces a maximum number of investors or a cap on the percentage held by any single investor).
+
+For ERC20 / ERC777 tokens the `balanceOf` and `allowance` functions provide a way to check that a transfer is likely to succeed before executing the transfer which can be executed both on and off-chain.
 
 For tokens representing securities we introduce a function `checkSecurityTokenSend` which provides a more general purpose way to achieve this when the reasons for failure are more complex and a function of the whole transfer (i.e. includes any data sent with the transfer and the receiver of the securities).
 
 In order to provide a richer result than just true or false, a byte return code is returned. This allows us to give an reason for why the transfer failed, or at least which category of reason the failure was in. The ability to query documents and the expected success of a transfer is included in Security Token section.
+
+--
+
+
 
 ## Partially-Fungible Token
 
@@ -102,12 +105,14 @@ function balanceOfByTranche(bytes32 _tranche, address _owner) external view retu
 
 By extending the ERC777 standard, and providing a default tranche (through `getDefaultTranches`) it is possible to send tokens (from default tranches). To send tokens from a specific tranche, the `sendByTranche` function can be used.
 
-For permissioned tokens, this function may check that the transfer is valid based on:  
+As an example, a permissioned token may use tranche metadata to enfore transfer restrictions based on:
   - the `_tranche` value
   - any additional data associated with the `_tranche` value (e.g. a lockup timestamp that may be associated with `_tranche`)
   - any details associated with the sender or receiver of tokens (e.g. has their identity been established)
   - the amount of tokens being transferred (e.g. does it respect any daily or other period based volume restrictions)
   - the `_data` parameter allows the caller to supply any additional authorisation or details associated with the transfer (e.g. signed data from an authorised entity who is permissioned to authorise the transfer)
+
+Other use-cases include tracking provenance of tokens by associating previous holders with destination tranches.
 
 This function MUST throw if the transfer of tokens is not successful for any reason.
 
@@ -116,7 +121,16 @@ When transferring tokens from a particular tranche, it is useful to know on-chai
 This function MUST emit a `SentByTranche` event for successful transfers.
 
 ``` solidity
+function sendByTranche(bytes32 _tranche, address _to, uint256 _amount, bytes _data) external returns (bytes32);
 function sendByTranches(bytes32[] _tranches, address[] _tos, uint256[] _amounts, bytes _data) external returns (bytes32);
+```
+
+#### tranchesOf
+
+A token holder may have their balance split into several partitions (tranches) - this function will return all of the tranches associated with a particular token holder address.
+
+``` solidity
+function tranchesOf(address _owner) external view returns (bytes32[]);
 ```
 
 ### Operators
@@ -124,7 +138,7 @@ function sendByTranches(bytes32[] _tranches, address[] _tos, uint256[] _amounts,
 Operators can be authorised for:
   - all owners and tranches (`defaultOperators` inherited from ERC777)
   - all owners for a specific tranche (`defaultOperatorsByTranche`)
-  - all tranches for a specific owner (`isOperatorFor` inherited from ERC777)
+  - all tranches (current and future) for a specific owner (`isOperatorFor` inherited from ERC777)
   - a specific tranche for a specific owner (`isOperatorForTranche`)
 
 #### defaultOperatorsByTranche
@@ -165,13 +179,12 @@ function isOperatorForTranche(bytes32 _tranche, address _operator, address _owne
 
 ### Interface
 
-[TODO: Specify token receiver interface]
-
 ``` solidity
 /// @title ERC-PFT Fungible Token Metadata Standard
-/// @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-PFT.md
+/// @dev See https://github.com/SecurityTokenStandard/EIP-Spec
 
 interface IERCPFT is IERC777 {
+
     function getDefaultTranches(address _owner) external view returns (bytes32[]);
     function setDefaultTranche(bytes32[] _tranches) external;
     function balanceOfByTranche(bytes32 _tranche, address _owner) external view returns (uint256);
@@ -179,14 +192,13 @@ interface IERCPFT is IERC777 {
     function sendByTranches(bytes32[] _tranches, address[] _tos, uint256[] _amounts, bytes _data) external returns (bytes32);
     function operatorSendByTranche(bytes32 _tranche, address _from, address _to, uint256 _amount, bytes _data, bytes _operatorData) external returns (bytes32[]);
     function operatorSendByTranches(bytes32[] _tranches, address[] _froms, address[] _tos, uint256[] _amounts, bytes _data, bytes _operatorData) external returns (bytes32[]);
-    function trancheByIndex(address _owner, uint256 _index) external view returns (bytes32);
-    function tranchesOf(address _owner) external view returns (uint256);
-    function defaultOperatorsByTranche(bytes32 _tranche) public view returns (address[]);
-    function authorizeOperatorByTranche(bytes32 _tranche, address _operator) public;
-    function revokeOperatorByTranche(bytes32 _tranche, address _operator) public;
-    function isOperatorForTranche(bytes32 _tranche, address _operator, address _owner) public view returns (bool);
-    function burnByTranche(bytes32 _tranche, uint256 _amount, bytes _data) public;
-    function operatorBurnByTranche(bytes32 _tranche, address _owner, uint256 _amount, bytes _operatorData) public;
+    function tranchesOf(address _owner) external view returns (bytes32[]);
+    function defaultOperatorsByTranche(bytes32 _tranche) external view returns (address[]);
+    function authorizeOperatorByTranche(bytes32 _tranche, address _operator) external;
+    function revokeOperatorByTranche(bytes32 _tranche, address _operator) external;
+    function isOperatorForTranche(bytes32 _tranche, address _operator, address _owner) external view returns (bool);
+    function burnByTranche(bytes32 _tranche, uint256 _amount, bytes _data) external;
+    function operatorBurnByTranche(bytes32 _tranche, address _owner, uint256 _amount, bytes _operatorData) external;
 
     event SentByTranche(
         bytes32 indexed fromTranche,
@@ -198,10 +210,9 @@ interface IERCPFT is IERC777 {
         bytes data,
         bytes operatorData
     );
-    event MintedByTranche(bytes32 indexed tranche, address indexed operator, address indexed to, uint256 amount, bytes data, bytes operatorData);
-    event BurnedByTranche(bytes32 indexed tranche, address indexed operator, address indexed from, uint256 amount, bytes operatorData);
     event AuthorizedOperatorByTranche(bytes32 indexed tranche, address indexed operator, address indexed tokenHolder);
     event RevokedOperatorByTranche(bytes32 indexed tranche, address indexed operator, address indexed tokenHolder);
+    event BurnedByTranche(bytes32 indexed tranche, address indexed operator, address indexed from, uint256 amount, bytes operatorData);
 
 }
 ```
@@ -212,9 +223,9 @@ interface IERCPFT is IERC777 {
 
 In order to remain backwards compatible with ERC20 / ERC777 (and other fungible token standards) it is necessary to define what tranche or tranches are used when a `transfer` / `send` operation is executed (i.e. when not explicitly specifying the tranche).
 
-If the implementation guarantees a small number of possible tranches per owner, it could be reasonable to iterate over all of an owners tranches.
+If the implementation guarantees a small number of possible tranches per owner, it could be reasonable to iterate over all of an owners tranches (using `tranchesOf`).
 
-The token creator MUST specify a default tranche which is used by the ERC20 / ERC777 functions for all users. Each user or operator of a user's full token balance for all tranches MAY change the default tranche of the user. The ability for a user to change their default tranche allows them to change the tranche displayed in ERC20 / ERC777 wallets which are not yet ERC-PFT compatible.
+The token creator MUST specify a default tranche(s) which is used by the ERC20 / ERC777 functions for all users. Each user or operator of a user's full token balance for all tranches MAY change the default tranche of the user. The ability for a user to change their default tranche allows them to change the tranche displayed in ERC20 / ERC777 wallets which are not yet ERC-PFT compatible.
 
 Here is a description of the implication for ERC777 functions:
 - `send()` MUST obtain default tranche using `getDefaultTranche()`
@@ -268,12 +279,12 @@ function checkSecurityTokenSend(address _from, address _to, bytes32 _tranche, ui
 
 #### mintable
 
-A security token issuer can specify that minting has finished for the token (i.e. no new tokens can be minted).
+A security token issuer can specify that issuance has finished for the token (i.e. no new tokens can be minted).
 
 If a token returns FALSE for `mintable()` then it MUST always return FALSE in the future.
 
 ``` solidity
-function mintable() public view returns (bool);
+function mintable() external view returns (bool);
 ```
 
 ### Interface
@@ -283,11 +294,12 @@ function mintable() public view returns (bool);
 /// @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-ST.md
 
 interface IERCST is IERCPFT {
-    function getDocument(bytes32 _name) public view returns (string, bytes32);
-    function setDocument(bytes32 _name, string _uri, bytes32 _documentHash) public;
-    function mintable() public view returns (bool);
-    function checkSecurityTokenSend(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data) public view returns (byte, bytes32, bytes32);
-    function mintByTranche(bytes32 _tranche, address _owner, uint256 _amount, bytes _data) public;
+    function getDocument(bytes32 _name) external view returns (string, bytes32);
+    function setDocument(bytes32 _name, string _uri, bytes32 _documentHash) external;
+    function mintable() external view returns (bool);
+    function checkSecurityTokenSend(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data) external view returns (byte, bytes32, bytes32);
+    function mintByTranche(bytes32 _tranche, address _owner, uint256 _amount, bytes _data) external;
+    event MintedByTranche(bytes32 indexed tranche, address indexed operator, address indexed to, uint256 amount, bytes data, bytes operatorData);
 }
 ```
 
@@ -322,7 +334,7 @@ Sending a security token could fail for any number of reasons. To improve the us
 
 #### On-chain vs. Off-chain Transfer Restrictions
 
-Transfers may be restricted or unrestricted based on rules that form part of the code for the securities contract. These rules may be self-contained (e.g. a rule which limits the maximum number of investors in the security) or require off-chain inputs (e.g. an explicit broker approval for the trade). To facilitate the latter, the `sendTranche` and `checkSecurityTokenSend` functions take an additional `bytes _data` parameter which can be used by a token owner or operator to provide additional data for the contract to interpret when considering whether the transfer should be allowed.
+Transfers may be restricted or unrestricted based on rules that form part of the code for the securities contract. These rules may be self-contained (e.g. a rule which limits the maximum number of investors in the security) or require off-chain inputs (e.g. an explicit broker approval for the trade). To facilitate the latter, the `sendByTranche` and `checkSecurityTokenSend` functions take an additional `bytes _data` parameter which can be used by a token owner or operator to provide additional data for the contract to interpret when considering whether the transfer should be allowed.
 
 The specification for this data is outside the scope of this standard and would be implementation specific.
 
