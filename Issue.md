@@ -26,7 +26,7 @@ This standard is meant to be a foundational block upon which additional standard
 
 ## Requirements
 
-Moving the issuance, trading and lifecycle events of a security onto a public ledger requires having a standard way of modeling securities, their ownership and their properties on-chain.
+Moving the issuance, trading and lifecycle events of a security onto a public ledger requires having a standard way of modelling securities, their ownership and their properties on-chain.
 
 The following requirements have been compiled following discussions with parties across the Security Token ecosystem.
 
@@ -48,13 +48,13 @@ This additional metadata implicitly renders these securities non-fungible, but i
 
 For example tokens may be split into those minted during the primary issuance, and those received through secondary trading.
 
-Having this data allows token contracts to implement sophisticated logic to govern transfers from a particular tranche, and in determining the tranche into which to deposit the receivers balance.
+Having this data allows token contracts to implement sophisticated logic to govern transfers from a particular tranche and determine the tranche into which to deposit the receivers balance.
 
 Transfers of securities can fail for a number of reasons in contrast to utility tokens which generally only require the sender to have a sufficient balance.
 
 These conditions could be related to metadata of the shares being transferred (i.e. whether they are subject to a lock-up period), the identity of the sender and receiver of the securities (i.e. whether they have been through a KYC process and whether they are accredited or an affiliate of the issuer) or for reasons unrelated to the specific transfer but instead set at the security level (i.e. the security enforces a maximum number of investors or a cap on the percentage held by any single investor).
 
-For utility ERC20 / ERC77 tokens the `balanceOf` and `allowance` functions provide a way to check that a transfer is likely to succeed before executing the transfer which can be executed both on and off-chain.
+For utility ERC20 / ERC777 tokens the `balanceOf` and `allowance` functions provide a way to check that a transfer is likely to succeed before executing the transfer which can be executed both on and off-chain.
 
 For tokens representing securities we introduce a function `checkSecurityTokenSend` which provides a more general purpose way to achieve this when the reasons for failure are more complex and a function of the whole transfer (i.e. includes any data sent with the transfer and the receiver of the securities).
 
@@ -62,11 +62,11 @@ In order to provide a richer result than just true or false, a byte return code 
 
 ## Partially-Fungible Token
 
-A Partially-Fungible Token allows for attaching metadata a sub-balance of a token holder. These sub-balances are called tranches and are indexed by a `bytes32 _tranche` key which can be associated with metadata on-chain or off-chain.
+A Partially-Fungible Token allows for attaching metadata to a partial balance of a token holder. These partial balances are called tranches and are indexed by a `bytes32 _tranche` key which can be associated with metadata on-chain or off-chain.
 
 ### Sending Tokens
 
-Token transfers always have an associated source and destination tranche, as well as the usual amounts and sender and receiver addresses.
+Token transfers always have an associated source and destination tranche, as well as the usual amounts and sender / receiver addresses.
 
 #### getDefaultTranches
 
@@ -288,7 +288,6 @@ interface IERCST is IERCPFT {
     function mintable() public view returns (bool);
     function checkSecurityTokenSend(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data) public view returns (byte, bytes32, bytes32);
     function mintByTranche(bytes32 _tranche, address _owner, uint256 _amount, bytes _data) public;
-
 }
 ```
 
@@ -296,7 +295,7 @@ interface IERCST is IERCPFT {
 
 #### Forced Transfers
 
-It may be that regulations require an issuer or a trusted third party to retain the power to force sending tokens. As such, the ERC-ST specification supersedes ERC-PFT in that a token holder MUST NOT be allowed revoke a default operator.
+It may be that regulations require an issuer or a trusted third party to retain the power to transfer tokens on behalf of investors. As such, the ERC-ST specification supersedes ERC-PFT in that a token holder MUST NOT be allowed revoke a default operator.
 
 #### Reason Codes
 
@@ -321,11 +320,9 @@ Sending a security token could fail for any number of reasons. To improve the us
 | `0xAE` |                                                               |
 | `0xAF` |                                                               |
 
-[TODO - improve list of reason codes based on community feedback]
-
 #### On-chain vs. Off-chain Transfer Restrictions
 
-Transfers may be restricted or unrestricted based on rules that form part of the code for the securities contract. These rules may be self-contained (e.g. a rule which limits the maximum number of investors in the security) or require off-chain inputs (e.g. an explicit broker approval for the trade). To facilitate the latter, the sendTranche and `checkSecurityTokenSend` functions take an additional `bytes _data` parameter which can be used by a token owner or operator to provide additional data for the contract to interpret when considering whether the transfer should be allowed.
+Transfers may be restricted or unrestricted based on rules that form part of the code for the securities contract. These rules may be self-contained (e.g. a rule which limits the maximum number of investors in the security) or require off-chain inputs (e.g. an explicit broker approval for the trade). To facilitate the latter, the `sendTranche` and `checkSecurityTokenSend` functions take an additional `bytes _data` parameter which can be used by a token owner or operator to provide additional data for the contract to interpret when considering whether the transfer should be allowed.
 
 The specification for this data is outside the scope of this standard and would be implementation specific.
 
