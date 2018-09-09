@@ -31,7 +31,7 @@ The following requirements have been compiled following discussions with parties
 - MUST have a standard interface to query if a transfer would be successful and return a reason for failure.
 - MUST be able to perform forced transfer for legal action or fund recovery.
 - MUST emit standard events for minting and burning.
-- MUST be able to attach metadata to a subset of a user's balance such as special shareholder rights or data for transfer restrictions.
+- MUST be able to attach metadata to a subset of a token holder's balance such as special shareholder rights or data for transfer restrictions.
 - MUST be able to modify metadata at time of transfer based on off-chain data, on-chain data and the parameters of the transfer.
 - MAY require signed data to be passed into a transfer transaction in order to validate it on-chain.
 - SHOULD NOT restrict the range of asset classes across jurisdictions which can be represented.
@@ -75,19 +75,19 @@ Token transfers always have an associated source and destination tranche, as wel
 
 In order to provide compatibility with ERC777 we need to know which tranches to use when a ERC777 `send` function is executed.
 
-This function returns the tranches to use in this circumstance. For example, a security token may return the `bytes32("unrestricted")` tranche, or a simple implementation with a small set of possible tranches could just return all tranches associated with an owner.
+This function returns the tranches to use in this circumstance. For example, a security token may return the `bytes32("unrestricted")` tranche, or a simple implementation with a small set of possible tranches could just return all tranches associated with a token holder.
 
 The return value can be empty which implies there is no default tranche (and hence the ERC777 `send` function will throw), or return more than one tranche, in which case the ERC777 `send` function should loop over these tranches in order until the specified amount has been successfully transferred.
 
 ``` solidity
-function getDefaultTranches(address _owner) external view returns (bytes32[]);
+function getDefaultTranches(address _tokenHolder) external view returns (bytes32[]);
 ```
 
 #### setDefaultTranches
 
 Allows default tranches to be set for a specified address, which will be used during ERC777 `send` function executions.
 
-This function could be open for all owners to call for themselves, or restricted to just the token owner depending on the required implementation behaviour.
+This function could be open for all token holders to call for themselves, or restricted to just the token holder depending on the required implementation behaviour.
 
 ``` solidity
 function setDefaultTranche(bytes32[] _tranches) external;
@@ -95,10 +95,10 @@ function setDefaultTranche(bytes32[] _tranches) external;
 
 #### balanceOfByTranche
 
-As well as querying total balances across all tranches through `balanceOf` it may be that a user of the standard wants to determine the balance of a specific tranche.
+As well as querying total balances across all tranches through `balanceOf` there may be a need to determine the balance of a specific tranche.
 
 ``` solidity
-function balanceOfByTranche(bytes32 _tranche, address _owner) external view returns (uint256);
+function balanceOfByTranche(bytes32 _tranche, address _tokenHolder) external view returns (uint256);
 ```
 
 #### sendByTranche
@@ -130,51 +130,51 @@ function sendByTranches(bytes32[] _tranches, address[] _tos, uint256[] _amounts,
 A token holder may have their balance split into several partitions (tranches) - this function will return all of the tranches associated with a particular token holder address.
 
 ``` solidity
-function tranchesOf(address _owner) external view returns (bytes32[]);
+function tranchesOf(address _tokenHolder) external view returns (bytes32[]);
 ```
 
 ### Operators
 
 Operators can be authorised for:
-  - all owners and tranches (`defaultOperators` inherited from ERC777)
-  - all owners for a specific tranche (`defaultOperatorsByTranche`)
-  - all tranches (current and future) for a specific owner (`isOperatorFor` inherited from ERC777)
-  - a specific tranche for a specific owner (`isOperatorForTranche`)
+  - all token holders and tranches (`defaultOperators` inherited from ERC777)
+  - all token holders for a specific tranche (`defaultOperatorsByTranche`)
+  - all tranches (current and future) for a specific token holder (`isOperatorFor` inherited from ERC777)
+  - a specific tranche for a specific token holder (`isOperatorForTranche`)
 
 #### defaultOperatorsByTranche
 
-This function returns the set of default operators who are authorised for all owners and a specified tranche.
+This function returns the set of default operators who are authorised for all token holders and a specified tranche.
 
 ``` solidity
-function defaultOperatorsByTranche(bytes32 _tranche) public view returns (address[]);
+function defaultOperatorsByTranche(bytes32 _tranche) external view returns (address[]);
 ```
 
 #### authorizeOperatorByTranche
 
-Allows an owner to set an operator for their tokens on a specific tranche.
+Allows a token holder to set an operator for their tokens on a specific tranche.
 
 ``` solidity
-function authorizeOperatorByTranche(bytes32 _tranche, address _operator) public;
+function authorizeOperatorByTranche(bytes32 _tranche, address _operator) external;
 ```
 
 #### revokeOperatorByTranche
 
-Allows an owner to revoke an operator for their tokens on a specific tranche.
+Allows a token holder to revoke an operator for their tokens on a specific tranche.
 
-NB - it is possible the operator will retain authorisation over this owner and tranche through either `defaultOperatorsByTranche` or `defaultOperators`.
+NB - it is possible the operator will retain authorisation over this token holder and tranche through either `defaultOperatorsByTranche` or `defaultOperators`.
 
 ``` solidity
-function revokeOperatorByTranche(bytes32 _tranche, address _operator) public;
+function revokeOperatorByTranche(bytes32 _tranche, address _operator) external;
 ```
 
 #### isOperatorForTranche
 
-Returns whether a specified address is an operator for the given owner and tranche.
+Returns whether a specified address is an operator for the given token holder and tranche.
 
 This should return TRUE if the address is an operator under any of the above categories.
 
 ``` solidity
-function isOperatorForTranche(bytes32 _tranche, address _operator, address _owner) public view returns (bool);
+function isOperatorForTranche(bytes32 _tranche, address _operator, address _tokenHolder) external view returns (bool);
 ```
 
 #### operatorSendByTranche
@@ -200,20 +200,20 @@ function operatorSendByTranches(bytes32[] _tranches, address[] _froms, address[]
 
 interface IERCPFT is IERC777 {
 
-    function getDefaultTranches(address _owner) external view returns (bytes32[]);
+    function getDefaultTranches(address _tokenHolder) external view returns (bytes32[]);
     function setDefaultTranche(bytes32[] _tranches) external;
-    function balanceOfByTranche(bytes32 _tranche, address _owner) external view returns (uint256);
+    function balanceOfByTranche(bytes32 _tranche, address _tokenHolder) external view returns (uint256);
     function sendByTranche(bytes32 _tranche, address _to, uint256 _amount, bytes _data) external returns (bytes32);
-    function sendByTranches(bytes32[] _tranches, address[] _tos, uint256[] _amounts, bytes _data) external returns (bytes32);
+    function sendByTranches(bytes32[] _tranches, address[] _tos, uint256[] _amounts, bytes _data) external returns (bytes32[]);
     function operatorSendByTranche(bytes32 _tranche, address _from, address _to, uint256 _amount, bytes _data, bytes _operatorData) external returns (bytes32);
     function operatorSendByTranches(bytes32[] _tranches, address[] _froms, address[] _tos, uint256[] _amounts, bytes _data, bytes _operatorData) external returns (bytes32[]);
-    function tranchesOf(address _owner) external view returns (bytes32[]);
+    function tranchesOf(address _tokenHolder) external view returns (bytes32[]);
     function defaultOperatorsByTranche(bytes32 _tranche) external view returns (address[]);
     function authorizeOperatorByTranche(bytes32 _tranche, address _operator) external;
     function revokeOperatorByTranche(bytes32 _tranche, address _operator) external;
-    function isOperatorForTranche(bytes32 _tranche, address _operator, address _owner) external view returns (bool);
+    function isOperatorForTranche(bytes32 _tranche, address _operator, address _tokenHolder) external view returns (bool);
     function burnByTranche(bytes32 _tranche, uint256 _amount, bytes _data) external;
-    function operatorBurnByTranche(bytes32 _tranche, address _owner, uint256 _amount, bytes _operatorData) external;
+    function operatorBurnByTranche(bytes32 _tranche, address _tokenHolder, uint256 _amount, bytes _operatorData) external;
 
     event SentByTranche(
         bytes32 indexed fromTranche,
@@ -238,21 +238,21 @@ interface IERCPFT is IERC777 {
 
 In order to remain backwards compatible with ERC20 / ERC777 (and other fungible token standards) it is necessary to define what tranche or tranches are used when a `transfer` / `send` operation is executed (i.e. when not explicitly specifying the tranche).
 
-If the implementation guarantees a small number of possible tranches per owner, it could be reasonable to iterate over all of an owners tranches (using `tranchesOf`).
+If the implementation guarantees a small number of possible tranches per token holder, it could be reasonable to iterate over all of a token holders tranches (using `tranchesOf`).
 
-The token creator MUST specify a default tranche(s) which is used by the ERC20 / ERC777 functions for all users. Each user or operator of a user's full token balance for all tranches MAY change the default tranche of the user. The ability for a user to change their default tranche allows them to change the tranche displayed in ERC20 / ERC777 wallets which are not yet ERC-PFT compatible.
+The token creator MUST specify a default tranche(s) which is used by the ERC20 / ERC777 functions for all token holders. Each token holder or operator of a token holder's full token balance for all tranches MAY change the default tranche of the token holder. The ability for a token holder to change their default tranche allows them to change the tranche displayed in ERC20 / ERC777 wallets which are not yet ERC-PFT compatible.
 
 Here is a description of the implication for ERC777 functions:
 - `send()` MUST obtain default tranche using `getDefaultTranche()`
 - `operatorSend()` MUST obtain default tranche using `getDefaultTranche()`
 - `burn()` MUST obtain default tranche using `getDefaultTranche()`
 - `operatorBurn()` MUST obtain default tranche using `getDefaultTranche()`
-- `balanceOf()` MUST count the sum of all tranche balances assigned to an owner
+- `balanceOf()` MUST count the sum of all tranche balances assigned to a token holder
 - `totalSupply()` MUST count all tokens tracked by this contract
 - `defaultOperators()` MUST query a list of operators which can operate over all addresses and tranches
 - `authorizeOperator()` MUST authorise an operator for all tranches of `msg.sender`
 - `revokeOperator()` MUST revoke authorisation of an operator previously given for all tranches of `msg.sender`
-- `isOperatorFor()` MUST query whether `_operator` is an operator for all tranches of `_owner`
+- `isOperatorFor()` MUST query whether `_operator` is an operator for all tranches of `_tokenHolder`
 - `event Minted()` and `event MintedByTranche()` MUST be emited for any increases in token supply
 - `event Burned()` and `event BurnedByTranche()` MUST be emited for any decreases in token supply
 - `event AuthorizedOperator()` MUST be emited by `authorizeOperator()`
@@ -269,8 +269,8 @@ These functions are used to manage a library of documents associated with the to
 A document is associated with a short name (represented as a `bytes32`) and can optionally have a hash of the document contents associated with it on-chain.
 
 ``` solidity
-function getDocument(bytes32 _name) public view returns (string, bytes32);
-function setDocument(bytes32 _name, string _uri, bytes32 _documentHash) public;
+function getDocument(bytes32 _name) external view returns (string, bytes32);
+function setDocument(bytes32 _name, string _uri, bytes32 _documentHash) external;
 ```
 
 #### checkSecurityTokenSend
@@ -289,7 +289,7 @@ The function will return both a ESC (Ethereum Status Code) following the EIP-106
 It also returns the destination tranche of the tokens being transferred in an analogous way to `sendByTranche`.
 
 ``` solidity
-function checkSecurityTokenSend(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data) public view returns (byte, bytes32, bytes32);
+function checkSecurityTokenSend(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data) external view returns (byte, bytes32, bytes32);
 ```
 
 #### mintable
@@ -313,7 +313,7 @@ interface IERCST is IERCPFT {
     function setDocument(bytes32 _name, string _uri, bytes32 _documentHash) external;
     function mintable() external view returns (bool);
     function checkSecurityTokenSend(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data) external view returns (byte, bytes32, bytes32);
-    function mintByTranche(bytes32 _tranche, address _owner, uint256 _amount, bytes _data) external;
+    function mintByTranche(bytes32 _tranche, address _tokenHolder, uint256 _amount, bytes _data) external;
     event MintedByTranche(bytes32 indexed tranche, address indexed operator, address indexed to, uint256 amount, bytes data, bytes operatorData);
 }
 ```
@@ -326,7 +326,7 @@ It may be that regulations require an issuer or a trusted third party to retain 
 
 #### Reason Codes
 
-Sending a security token could fail for any number of reasons. To improve the user experience, `checkSecurityTokenSend` MUST return a reason code on success or failure based on the EIP-1066 application-specific status codes specified below. An implementation can also return arbitrary data as a `bytes32` to provide additional information not captured by the reason code.
+Sending a security token could fail for any number of reasons. To improve the token holder experience, `checkSecurityTokenSend` MUST return a reason code on success or failure based on the EIP-1066 application-specific status codes specified below. An implementation can also return arbitrary data as a `bytes32` to provide additional information not captured by the reason code.
 
 | Code   | Reason                                                        |
 | ------ | ------------------------------------------------------------- |
@@ -349,7 +349,7 @@ Sending a security token could fail for any number of reasons. To improve the us
 
 #### On-chain vs. Off-chain Transfer Restrictions
 
-Transfers may be restricted or unrestricted based on rules that form part of the code for the securities contract. These rules may be self-contained (e.g. a rule which limits the maximum number of investors in the security) or require off-chain inputs (e.g. an explicit broker approval for the trade). To facilitate the latter, the `sendByTranche` and `checkSecurityTokenSend` functions take an additional `bytes _data` parameter which can be used by a token owner or operator to provide additional data for the contract to interpret when considering whether the transfer should be allowed.
+Transfers may be restricted or unrestricted based on rules that form part of the code for the securities contract. These rules may be self-contained (e.g. a rule which limits the maximum number of investors in the security) or require off-chain inputs (e.g. an explicit broker approval for the trade). To facilitate the latter, the `sendByTranche` and `checkSecurityTokenSend` functions take an additional `bytes _data` parameter which can be used by a token holder or operator to provide additional data for the contract to interpret when considering whether the transfer should be allowed.
 
 The specification for this data is outside the scope of this standard and would be implementation specific.
 
