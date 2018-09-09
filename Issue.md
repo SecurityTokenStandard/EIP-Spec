@@ -33,9 +33,9 @@ The following requirements have been compiled following discussions with parties
 - MUST have a standard interface to query if a transfer would be successful and return a reason for failure.
 - MUST be able to perform forced transfer for legal action or fund recovery.
 - MUST emit standard events for minting and burning.
-- MUST be able to attach meta-data to a subsets of a user's balance such as special shareholder rights, data for transfer restrictions or document for disclosure purposes.
-- MUST be able to modify meta-data at time of transfer according to token holder identity (including but not limited to investor profile such as jurisdiction or accreditation status).
-- MAY be able to programmatically modify meta-data at time of transfer using on-chain rule engine.
+- MUST be able to attach metadata to a subsets of a user's balance such as special shareholder rights, data for transfer restrictions or document for disclosure purposes.
+- MUST be able to modify metadata at time of transfer according to token holder identity (including but not limited to investor profile such as jurisdiction or accreditation status).
+- MAY be able to programmatically modify metadata at time of transfer using on-chain rule engine.
 - MAY require all transfers to be signed by approved parties off-chain.
 - SHOULD NOT restrict the range of asset classes across jurisdictions which can be represented.
 - SHOULD be ERC20 and ERC777 compatible.
@@ -44,7 +44,7 @@ The following requirements have been compiled following discussions with parties
 
 There are many types of securities which, although they represent the same asset, need to have differentiating data tied to them.
 
-This additional metadata implicitly renders these securities non-fungible, but in practice this data is usually applied to groups of securities rather than individual securities. The ability to include meta-data with subsections of a token holder balance is addressed in Partially-Fungible Token section.
+This additional metadata implicitly renders these securities non-fungible, but in practice this data is usually applied to groups of securities rather than individual securities. The ability to include metadata with subsections of a token holder balance is addressed in Partially-Fungible Token section.
 
 For example tokens may be split into those minted during the primary issuance, and those received through secondary trading.
 
@@ -61,6 +61,8 @@ For tokens representing securities we introduce a function `checkSecurityTokenSe
 In order to provide a richer result than just true or false, a byte return code is returned. This allows us to give an reason for why the transfer failed, or at least which category of reason the failure was in. The ability to query documents and the expected success of a transfer is included in Security Token section.
 
 ## Partially-Fungible Token
+
+A Partially-Fungible Token allows for attaching metadata a sub-balance of a token holder. These sub-balances are called tranches and are indexed by a `bytes32 _tranche` key which can be associated with metadata on-chain or off-chain.
 
 ### Sending Tokens
 
