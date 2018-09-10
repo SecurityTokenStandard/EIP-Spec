@@ -24,7 +24,7 @@ Security tokens should be able to represent any asset class, issued and managed 
 
 ## Requirements
 
-Moving the issuance, trading and lifecycle events of a security onto a public ledger requires having a standard way of modelling securities, their ownership and their properties on-chain.
+Moving the issuance, trading and lifecycle events of a security onto a public ledger requires having a standard way of modeling securities, their ownership and their properties on-chain.
 
 The following requirements have been compiled following discussions with parties across the Security Token ecosystem.
 
@@ -55,13 +55,11 @@ These conditions could be related to metadata of the securities being transferre
 
 For ERC20 / ERC777 tokens, the `balanceOf` and `allowance` functions provide a way to check that a transfer is likely to succeed before executing the transfer, which can be executed both on and off-chain.
 
-For tokens representing securities we introduce a function `checkSecurityTokenSend` which provides a more general purpose way to achieve this when the reasons for failure are more complex; and a function of the whole transfer (i.e. includes any data sent with the transfer and the receiver of the securities).
+For tokens representing securities the standard introduces a function `checkSecurityTokenSend` which provides a more general purpose way to achieve this when the reasons for failure are more complex; and a function of the whole transfer (i.e. includes any data sent with the transfer and the receiver of the securities).
 
 In order to provide a richer result than just true or false, a byte return code is returned. This allows us to give a reason for why the transfer failed, or at least which category of reason the failure was in. The ability to query documents and the expected success of a transfer is included in Security Token section.
 
 --
-
-
 
 ## Partially-Fungible Token
 
@@ -73,7 +71,7 @@ Token transfers always have an associated source and destination tranche, as wel
 
 #### getDefaultTranches
 
-In order to provide compatibility with ERC777 we need to know which tranches to use when a ERC777 `send` function is executed.
+In order to provide compatibility with ERC777 the implementation needs to determine which tranches to use when a ERC777 `send` function is executed.
 
 This function returns the tranches to use in this circumstance. For example, a security token may return the `bytes32("unrestricted")` tranche, or a simple implementation with a small set of possible tranches could just return all tranches associated with a token holder.
 
@@ -350,6 +348,7 @@ interface IERCST is IERCPFT {
     function mintable() external view returns (bool);
     function checkSecurityTokenSend(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data) external view returns (byte, bytes32, bytes32);
     function mintByTranche(bytes32 _tranche, address _tokenHolder, uint256 _amount, bytes _data) external;
+
     event MintedByTranche(bytes32 indexed tranche, address indexed operator, address indexed to, uint256 amount, bytes data, bytes operatorData);
 }
 ```
@@ -360,9 +359,29 @@ interface IERCST is IERCPFT {
 
 It may be that regulations require an issuer or a trusted third party to retain the power to transfer tokens on behalf of investors. As such, the ERC-ST specification supersedes ERC-PFT in that a token holder MUST NOT be allowed revoke a default operator.
 
+#### Restricted Transfers
+
+Transfers of security tokens can fail for a number of reasons in contrast to utility tokens which generally only require the sender to have a sufficient balance.
+
+These conditions could be related to metadata of the security tokens being transferred (i.e. whether they are subject to a lock-up period), the identity and eligibility of the sender and receiver of the tokens (i.e. whether they have been through a KYC process and whether they are accredited or an affiliate of the issuer) or for reasons unrelated to the specific transfer but instead set at the security level for regulatory purposes (i.e. the security enforces a maximum number of investors or a cap on the percentage held by any single investor).
+
+For utility tokens (ERC20 / ERC777) the `balanceOf` and `allowance` functions provide a way to check that a transfer is likely to succeed before executing the transfer which, can be executed both on and off-chain.
+
+The standard introduces a function `checkSecurityTokenSend` which provides a more general purpose way to query if sending tokens would be successful. It accepts a set of parameters which may include signed data and returns a reason byte code with information about the success or failure of the transaction.
+
+NB - the result of a call to `checkSecurityTokenSend` may change depending on on-chain state (including block numbers or timestamps) and possibly off-chain oracles. As such, it does not provide guarantees that a future transfer will be successful after being called as a view function that does not modify any state.
+
+#### Identity
+
+Under many jurisdictions, whether a party is able to receive and send security tokens depends on the characteristics of the party's identity. For example, most jurisdictions require some level of KYC / AML process before a party is eligible to purchase or sell a particular security. Additionally, a party may be categorized into an investor qualification category (e.g. accredited investor, qualified purchaser), and their citizenship may also inform restrictions associated with their securities.
+
+There are various identity standards (e.g. ERC725, Civic, uPort) which can be used to capture the party's identity data, as well as other approaches which are centrally managed (e.g. maintaining a whitelist of addresses that have been approved from a KYC perspective). These identity standards have in common to key off an Ethereum address (which could be a party's wallet, or an identity contract), and as such the `checkSecurityTokenSend` function can use the address of both the sender and receiver of the security token as a proxy for identity in deciding if eligibility requirements are met.
+
+Beyond this, the standard does not mandate any particular approach to identity.
+
 #### Reason Codes
 
-Sending a security token could fail for any number of reasons. To improve the token holder experience, `checkSecurityTokenSend` MUST return a reason code on success or failure based on the EIP-1066 application-specific status codes specified below. An implementation can also return arbitrary data as a `bytes32` to provide additional information not captured by the reason code.
+To improve the token holder experience, `checkSecurityTokenSend` MUST return a reason byte code on success or failure based on the EIP-1066 application-specific status codes specified below. An implementation can also return arbitrary data as a `bytes32` to provide additional information not captured by the reason code.
 
 | Code   | Reason                                                        |
 | ------ | ------------------------------------------------------------- |
@@ -385,7 +404,7 @@ Sending a security token could fail for any number of reasons. To improve the to
 
 #### On-chain vs. Off-chain Transfer Restrictions
 
-Transfers may be restricted or unrestricted based on rules that form part of the code for the securities contract. These rules may be self-contained (e.g. a rule which limits the maximum number of investors in the security) or require off-chain inputs (e.g. an explicit broker approval for the trade). To facilitate the latter, the `sendByTranche` and `checkSecurityTokenSend` functions take an additional `bytes _data` parameter which can be used by a token holder or operator to provide additional data for the contract to interpret when considering whether the transfer should be allowed.
+The rules determining if a security token can be sent may be self-executing (e.g. a rule which limits the maximum number of investors in the security) or require off-chain inputs (e.g. an explicit broker approval for the trade). To facilitate the latter, the `sendByTranche` and `checkSecurityTokenSend` functions accept an additional `bytes _data` parameter which can be signed by an approved party and used to validate a transfer.
 
 The specification for this data is outside the scope of this standard and would be implementation specific.
 
