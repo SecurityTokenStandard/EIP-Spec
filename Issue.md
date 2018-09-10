@@ -20,7 +20,7 @@ Accelerate the issuance and management of securities on the Ethereum blockchain 
 
 Security tokens differ materially from other token use-cases, with more complex interactions between off-chain and on-chain actors, and considerable regulatory scrutiny.
 
-Security tokens should be able to represent any asset class, issued and managed across any jurisdiction, with the associated regulatory restrictions.
+Security tokens should be able to represent any asset class, be issued and managed across any jurisdiction, and comply with the associated regulatory restrictions.
 
 ## Requirements
 
@@ -30,7 +30,7 @@ The following requirements have been compiled following discussions with parties
 
 - MUST have a standard interface to query if a transfer would be successful and return a reason for failure.
 - MUST be able to perform forced transfer for legal action or fund recovery.
-- MUST emit standard events for minting and burning.
+- MUST emit standard events for issuance and redemption.
 - MUST be able to attach metadata to a subset of a token holder's balance such as special shareholder rights or data for transfer restrictions.
 - MUST be able to modify metadata at time of transfer based on off-chain data, on-chain data and the parameters of the transfer.
 - MAY require signed data to be passed into a transfer transaction in order to validate it on-chain.
@@ -43,11 +43,9 @@ There are many types of securities which, although they represent the same under
 
 This additional metadata implicitly renders these securities non-fungible, but in practice this data is usually applied to a subset of the security rather than an individual security. The ability to partition a token holder's balance into tranches, each with separate metadata is addressed in the Partially-Fungible Token section.
 
-For example a token holder's balance may be split in two: Those tokens minted during the primary issuance, and those received through secondary trading.
+For example a token holder's balance may be split in two: Those tokens issued during the primary issuance, and those received through secondary trading.
 
-Security token transfers can reference this metadata in order to apply additional logic to determine whether or not the transfer is valid, and the metadata that should be associated with the tokens once transferred into the receiver's balance.
-
---
+Security token contracts can reference this metadata in order to apply additional logic to determine whether or not a transfer is valid, and determine the metadata that should be associated with the tokens once transferred into the receiver's balance.
 
 Transfers of securities can fail for a variety of reasons in contrast to utility tokens which generally only require the sender to have a sufficient balance.
 
@@ -58,8 +56,6 @@ For ERC20 / ERC777 tokens, the `balanceOf` and `allowance` functions provide a w
 For tokens representing securities the standard introduces a function `checkSecurityTokenSend` which provides a more general purpose way to achieve this when the reasons for failure are more complex; and a function of the whole transfer (i.e. includes any data sent with the transfer and the receiver of the securities).
 
 In order to provide a richer result than just true or false, a byte return code is returned. This allows us to give a reason for why the transfer failed, or at least which category of reason the failure was in. The ability to query documents and the expected success of a transfer is included in Security Token section.
-
---
 
 ## Partially-Fungible Token
 
@@ -123,14 +119,14 @@ function sendByTranche(bytes32 _tranche, address _to, uint256 _amount, bytes _da
 function sendByTranches(bytes32[] _tranches, address[] _tos, uint256[] _amounts, bytes _data) external returns (bytes32);
 ```
 
-#### burnByTranche
+#### redeemByTranche
 
-Allows a token holder to burn tokens.
+Allows a token holder to burn or redeem tokens.
 
-The burned tokens must be subtracted from the total supply and the balance of the token holder. The token burn should act like sending tokens and be subject to the same conditions. The `BurnedByTranche` event must be emitted every time this function is called.
+The burnt or redeemed tokens must be subtracted from the total supply and the balance of the token holder. The token burn should act like sending tokens and be subject to the same conditions. The `BurnedByTranche` event must be emitted every time this function is called.
 
 ``` solidity
-function burnByTranche(bytes32 _tranche, uint256 _amount, bytes _data) external;
+function redeemByTranche(bytes32 _tranche, uint256 _amount, bytes _data) external;
 ```
 
 #### tranchesOf
@@ -206,14 +202,14 @@ function operatorSendByTranche(bytes32 _tranche, address _from, address _to, uin
 function operatorSendByTranches(bytes32[] _tranches, address[] _froms, address[] _tos, uint256[] _amounts, bytes _data, bytes _operatorData) external returns (bytes32[]);
 ```
 
-#### operatorBurnByTranche
+#### operatorRedeemByTranche
 
-Allows an operator to burn tokens on behalf of a token holder.
+Allows an operator to burn or redeem tokens on behalf of a token holder.
 
-The burned tokens must be subtracted from the total supply and the balance of the token holder. The token burn should act like sending tokens and be subject to the same conditions. The `BurnedByTranche` event must be emitted every time this function is called.
+The burnt or redeemed tokens must be subtracted from the total supply and the balance of the token holder. The token burn should act like sending tokens and be subject to the same conditions. The `BurnedByTranche` event must be emitted every time this function is called.
 
 ``` solidity
-function operatorBurnByTranche(bytes32 _tranche, address _tokenHolder, uint256 _amount, bytes _operatorData) external;
+function operatorRedeemByTranche(bytes32 _tranche, address _tokenHolder, uint256 _amount, bytes _operatorData) external;
 ```
 
 ### Interface
@@ -236,8 +232,8 @@ interface IERCPFT is IERC777 {
     function authorizeOperatorByTranche(bytes32 _tranche, address _operator) external;
     function revokeOperatorByTranche(bytes32 _tranche, address _operator) external;
     function isOperatorForTranche(bytes32 _tranche, address _operator, address _tokenHolder) external view returns (bool);
-    function burnByTranche(bytes32 _tranche, uint256 _amount, bytes _data) external;
-    function operatorBurnByTranche(bytes32 _tranche, address _tokenHolder, uint256 _amount, bytes _operatorData) external;
+    function redeemByTranche(bytes32 _tranche, uint256 _amount, bytes _data) external;
+    function operatorRedeemByTranche(bytes32 _tranche, address _tokenHolder, uint256 _amount, bytes _operatorData) external;
 
     event SentByTranche(
         bytes32 indexed fromTranche,
@@ -316,24 +312,24 @@ It also returns the destination tranche of the tokens being transferred in an an
 function checkSecurityTokenSend(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data) external view returns (byte, bytes32, bytes32);
 ```
 
-#### mintable
+#### issuable
 
-A security token issuer can specify that issuance has finished for the token (i.e. no new tokens can be minted).
+A security token issuer can specify that issuance has finished for the token (i.e. no new tokens can be minted or issued).
 
-If a token returns FALSE for `mintable()` then it MUST always return FALSE in the future.
+If a token returns FALSE for `issuable()` then it MUST always return FALSE in the future.
 
 ``` solidity
-function mintable() external view returns (bool);
+function issuable() external view returns (bool);
 ```
 
-#### mintByTranche
+#### issueByTranche
 
 This function must be called to increase the total supply.
 
-When called, this function MUST emit the `MintedByTranche` event.
+When called, this function MUST emit the `IssuedByTranche` event.
 
 ``` solidity
-function mintByTranche(bytes32 _tranche, address _tokenHolder, uint256 _amount, bytes _data) external;
+function issueByTranche(bytes32 _tranche, address _tokenHolder, uint256 _amount, bytes _data) external;
 ```
 
 ### Interface
@@ -345,11 +341,11 @@ function mintByTranche(bytes32 _tranche, address _tokenHolder, uint256 _amount, 
 interface IERCST is IERCPFT {
     function getDocument(bytes32 _name) external view returns (string, bytes32);
     function setDocument(bytes32 _name, string _uri, bytes32 _documentHash) external;
-    function mintable() external view returns (bool);
+    function issuable() external view returns (bool);
     function checkSecurityTokenSend(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data) external view returns (byte, bytes32, bytes32);
-    function mintByTranche(bytes32 _tranche, address _tokenHolder, uint256 _amount, bytes _data) external;
+    function issueByTranche(bytes32 _tranche, address _tokenHolder, uint256 _amount, bytes _data) external;
 
-    event MintedByTranche(bytes32 indexed tranche, address indexed operator, address indexed to, uint256 amount, bytes data, bytes operatorData);
+    event IssuedByTranche(bytes32 indexed tranche, address indexed operator, address indexed to, uint256 amount, bytes data, bytes operatorData);
 }
 ```
 
