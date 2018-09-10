@@ -125,6 +125,16 @@ function sendByTranche(bytes32 _tranche, address _to, uint256 _amount, bytes _da
 function sendByTranches(bytes32[] _tranches, address[] _tos, uint256[] _amounts, bytes _data) external returns (bytes32);
 ```
 
+#### burnByTranche
+
+Allows a token holder to burn tokens.
+
+The burned tokens must be subtracted from the total supply and the balance of the token holder. The token burn should act like sending tokens and be subject to the same conditions. The `BurnedByTranche` event must be emitted every time this function is called.
+
+``` solidity
+function burnByTranche(bytes32 _tranche, uint256 _amount, bytes _data) external;
+```
+
 #### tranchesOf
 
 A token holder may have their balance split into several partitions (tranches) - this function will return all of the tranches associated with a particular token holder address.
@@ -153,6 +163,8 @@ function defaultOperatorsByTranche(bytes32 _tranche) external view returns (addr
 
 Allows a token holder to set an operator for their tokens on a specific tranche.
 
+This function MUST emit the event `AuthorizedOperatorByTranche` every time it is called.
+
 ``` solidity
 function authorizeOperatorByTranche(bytes32 _tranche, address _operator) external;
 ```
@@ -162,6 +174,8 @@ function authorizeOperatorByTranche(bytes32 _tranche, address _operator) externa
 Allows a token holder to revoke an operator for their tokens on a specific tranche.
 
 NB - it is possible the operator will retain authorisation over this token holder and tranche through either `defaultOperatorsByTranche` or `defaultOperators`.
+
+This function MUST emit the event `RevokedOperatorByTranche` every time it is called.
 
 ``` solidity
 function revokeOperatorByTranche(bytes32 _tranche, address _operator) external;
@@ -187,9 +201,21 @@ The `bytes32 _tranche` of the receiver can be defined in the `bytes _data` if no
 
 This function MUST revert if called by an address lacking the appropriate approval as defined by `isOperatorForTranche`.
 
+This function MUST emit a `SentByTranche` event for successful token sends.
+
 ``` solidity
 function operatorSendByTranche(bytes32 _tranche, address _from, address _to, uint256 _amount, bytes _data, bytes _operatorData) external returns (bytes32);
 function operatorSendByTranches(bytes32[] _tranches, address[] _froms, address[] _tos, uint256[] _amounts, bytes _data, bytes _operatorData) external returns (bytes32[]);
+```
+
+#### operatorBurnByTranche
+
+Allows an operator to burn tokens on behalf of a token holder.
+
+The burned tokens must be subtracted from the total supply and the balance of the token holder. The token burn should act like sending tokens and be subject to the same conditions. The `BurnedByTranche` event must be emitted every time this function is called.
+
+``` solidity
+function operatorBurnByTranche(bytes32 _tranche, address _tokenHolder, uint256 _amount, bytes _operatorData) external;
 ```
 
 ### Interface
@@ -302,11 +328,21 @@ If a token returns FALSE for `mintable()` then it MUST always return FALSE in th
 function mintable() external view returns (bool);
 ```
 
+#### mintByTranche
+
+This function must be called to increase the total supply.
+
+When called, this function MUST emit the `MintedByTranche` event.
+
+``` solidity
+function mintByTranche(bytes32 _tranche, address _tokenHolder, uint256 _amount, bytes _data) external;
+```
+
 ### Interface
 
 ``` solidity
 /// @title ERC-ST Fungible Token Metadata Standard
-/// @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-ST.md
+/// @dev See https://github.com/SecurityTokenStandard/EIP-Spec
 
 interface IERCST is IERCPFT {
     function getDocument(bytes32 _name) external view returns (string, bytes32);
