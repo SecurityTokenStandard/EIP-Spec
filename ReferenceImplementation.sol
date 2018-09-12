@@ -1,3 +1,5 @@
+// This is a work in progress currently based on an older version of the specification.
+
 pragma solidity ^0.4.24;
 
 interface IERCPFT {

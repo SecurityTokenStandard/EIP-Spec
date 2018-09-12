@@ -24,15 +24,14 @@ A security token requires the following features:
 ## Requirements
 
 The following requirements have been compiled following discussions with parties across the Security Token ecosystem.
-- MUST have a standard interface to query if a transfer would be successful.
+- MUST have a standard interface to query if a transfer would be successful and return a reason for failure.
 - MUST be able to perform forced transfer for legal action or fund recovery.
-- MUST emit standard events for minting and burning.
-- MUST be able to query a document which outlines share restrictions for disclosure purposes.
-- MUST be able to modify document which describes share restrictions based on token holder investor profile (including but not limited to jurisdiction or accreditation status).
-- MAY be able to programmatically modify document which describes share restrictions based on on-chain rule engine.
-- MAY require all transfers to be signed by approved parties off-chain.
+- MUST emit standard events for issuance and redemption.
+- MUST be able to attach metadata to a subset of a token holder's balance such as special shareholder rights or data for transfer restrictions.
+- MUST be able to modify metadata at time of transfer based on off-chain data, on-chain data and the parameters of the transfer.
+- MAY require signed data to be passed into a transfer transaction in order to validate it on-chain.
 - SHOULD NOT restrict the range of asset classes across jurisdictions which can be represented.
-- SHOULD be ERC20 and MUST be ERC777 compatible.
+- SHOULD be ERC20 and ERC777 compatible.
 
 ## Partially-Fungible Token
 
