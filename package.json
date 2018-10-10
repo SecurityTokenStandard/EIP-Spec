@@ -1,0 +1,32 @@
+{
+  "name": "eip-spec",
+  "version": "0.1.0",
+  "description": "Security Token Standard",
+  "main": "truffle.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SecurityTokenStandard/EIP-Spec.git"
+  },
+  "keywords": [
+    "SecurityTokens",
+    "EIP",
+    "Securites",
+    "ERC1400",
+    "ERC1410",
+    "PFT",
+    "ERC777",
+    "ERC1066"
+  ],
+  "author": "Polymath Inc",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SecurityTokenStandard/EIP-Spec/issues"
+  },
+  "homepage": "https://github.com/SecurityTokenStandard/EIP-Spec#readme"
+}
