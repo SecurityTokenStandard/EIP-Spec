@@ -34,17 +34,28 @@ contract PartialFungibleToken is IERC1410 {
     // Mapping from (investor, operator) to approved status (can be used against any tranches)
     mapping (address => mapping (address => bool)) approvals;
 
-    // Returns sum of amounts over all owned fungible token sets for investor
+    /// @notice Counts the sum of all tranche balances assigned to an owner
+    /// @param _owner An address for whom to query the balance
+    /// @return The number of tokens owned by `_owner`, possibly zero
     function balanceOf(address _owner) external view returns (uint256) {
         return balances[_owner];
     }
 
-    // Returns restricted token balance
-    function balanceOfTranche(bytes32 _tranche, address _owner) public view returns (uint256) {
+    /// @notice Counts the balance associated with a specific tranche assigned to an owner
+    /// @param _tranche The tranche for which to query the balance
+    /// @param _owner An address for whom to query the balance
+    /// @return The number of tokens owned by `_owner` with the metadata associated with `_tranche`, possibly zero
+    function balanceOfTranche(bytes32 _tranche, address _owner) external view returns (uint256) {
         return tranches[_owner][trancheToIndex[_owner][_tranche]].amount;
     }
 
-    // Transfers tokens from the sender to the _to address, keeping the _tranche the same
+    /// @notice Transfers the ownership of tokens from a specified tranche from one address to another address
+    /// @param _tranche The tranche from which to transfer tokens
+    /// @param _to The address to which to transfer tokens to
+    /// @param _amount The amount of tokens to transfer from `_tranche`
+    /// @param _data Additional data attached to the transfer of tokens
+    /// @return A reason code related to the success of the send operation
+    /// @return The tranche to which the transferred tokens were allocated for the _to address
     function sendTranche(bytes32 _tranche, address _to, uint256 _amount, bytes _data) external returns (byte, bytes32) {
         (byte reason, bytes32 newTranche) = _sendTranche(msg.sender, _to, _amount, _tranche, _data, '');
         emit SentTranche(
@@ -62,21 +73,22 @@ contract PartialFungibleToken is IERC1410 {
 
     function _sendTranche(address _from, address _to, uint256 _amount, bytes32 _tranche, bytes _data, bytes _operatorData) internal returns (byte, bytes32) {
 
-        if (balanceOfTranche(_from, _tranche) < _amount) {
-            return (hex"00", bytes32(''));
+        if (tranches[_from][trancheToIndex[_from][_tranche]].amount < _amount) {
+            return (hex"00", bytes32(""));
+        }
+        // Checking the overflow condition in subtraction TODO: Create a library for that similar to SafeMath
+        if (tranches[_from][trancheToIndex[_from][_tranche]].amount > tranches[_from][trancheToIndex[_from][_tranche]].amount - _amount) {
+            return (hex"10", bytes32(""));
         }
 
-        if (tranches[_from][trancheToIndex[msg.sender][_tranche]].amount > tranches[_from][trancheToIndex[msg.sender][_tranche]].amount - _amount) {
-            return (hex"10", '');
+        // Checking the overflow condition in addition TODO: Create a library for that similar to SafeMath
+        if (tranches[_to][trancheToIndex[_to][_tranche]].amount > tranches[_to][trancheToIndex[_to][_tranche]].amount + _amount) {
+            return (hex"10", bytes32(""));
         }
 
-        if (tranches[_from][trancheToIndex[msg.sender][_tranche]].amount > tranches[_from][trancheToIndex[msg.sender][_tranche]].amount - _amount) {
-            return (hex"10", bytes32(''));
-        }
-
-        tranches[_from][trancheToIndex[_from][_tranche]].amount = tranches[_from][trancheToIndex[msg.sender][_tranche]].amount - _amount;
-        balances[_from] = balances[msg.sender] - _amount;
-        tranches[_to][trancheToIndex[_from][_tranche]].amount = tranches[_from][trancheToIndex[_from][_tranche]].amount + _amount;
+        tranches[_from][trancheToIndex[_from][_tranche]].amount = tranches[_from][trancheToIndex[_from][_tranche]].amount - _amount;
+        balances[_from] = balances[_from] - _amount;
+        tranches[_to][trancheToIndex[_to][_tranche]].amount = tranches[_to][trancheToIndex[_to][_tranche]].amount + _amount;
         balances[_to] = balances[_to] + _amount;
 
         // TODO: If transferring to a registered contract, call its callback function
@@ -97,9 +109,9 @@ contract PartialFungibleToken is IERC1410 {
     function operatorSendTranche(bytes32 _tranche, address _from, address _to, uint256 _amount, bytes _data, bytes _operatorData) external returns (byte, bytes32) {
         // Check operator is approved
         if ((!trancheApprovals[_from][_tranche][msg.sender]) && (!approvals[_from][msg.sender])) {
-            return (hex"20", bytes32(''));
+            return (hex"20", bytes32(""));
         }
-        (byte reason, bytes32 newTranche) = _sendTranche(_from, _to, _tranche, _amount, _data, _operatorData);
+        (byte reason, bytes32 newTranche) = _sendTranche(_from, _to, _amount, _tranche, _data, _operatorData);
         emit SentTranche(
             msg.sender,
             _from,
@@ -197,6 +209,7 @@ contract PartialFungibleToken is IERC1410 {
     /// @param _data Additional data attached to the minting of tokens
     /// @return A reason code related to the success of the mint operation
     function mint(bytes32 _tranche, address _owner, uint256 _amount, bytes _data) public returns (byte reason) {
+        // TODO: Apply the check for Authorization of Mint function
         if (tranches[_owner][trancheToIndex[_owner][_tranche]].amount + _amount < tranches[_owner][trancheToIndex[_owner][_tranche]].amount) {
             return (hex"10");
         }
@@ -214,7 +227,7 @@ contract PartialFungibleToken is IERC1410 {
             msg.sender,
             address(0),
             _owner,
-            bytes32(''),
+            bytes32(""),
             _tranche,
             _amount,
             _data,
@@ -230,6 +243,7 @@ contract PartialFungibleToken is IERC1410 {
     /// @param _data Additional data attached to the burning of tokens
     /// @return A reason code related to the success of the burn operation
     function burn(bytes32 _tranche, address _owner, uint256 _amount, bytes _data) public returns (byte reason) {
+        // TODO: Apply the check for Authorization of burn function
         if (tranches[_owner][trancheToIndex[_owner][_tranche]].amount - _amount > tranches[_owner][trancheToIndex[_owner][_tranche]].amount) {
             return (hex"10");
         }
@@ -248,7 +262,7 @@ contract PartialFungibleToken is IERC1410 {
             _owner,
             address(0),
             _tranche,
-            bytes32(''),
+            bytes32(""),
             _amount,
             _data,
             ''
