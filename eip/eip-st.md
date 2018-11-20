@@ -1,6 +1,6 @@
 ---
 
-eip: ERC1400
+eip: ERCXXX
 title: Security Token Standard
 author: Adam Dossa (@adamdossa), Pablo Ruiz (@pabloruiz55), Fabian Vogelsteller (@frozeman), Stephane Gosselin (@thegostep)
 discussions-to: #1411
@@ -8,7 +8,7 @@ status: Draft
 type: Standards Track
 category: ERC
 created: 2018-09-09
-require: ERC-1410 (#1410), ERC-20 (#20)
+require: ERC-20 (#20), ERC-1066 (#1066)
 
 ---
 
@@ -16,11 +16,13 @@ require: ERC-1410 (#1410), ERC-20 (#20)
 
 A standard interface for issuing security tokens, managing their ownership and transfer restrictions.
 
+This standard represents a decomposition of ERC-1400 (#1411) to split out the tranche functionality (ERC-1410 #1410) from the remainder of the security token functionality.
+
 ## Abstract
 
-Builds on the partially fungible token standard (ERC 1410 (#1410)) to provide additional functionality to manage different types of ownership of fungible tokens representing asset ownership.
+Incorporates document management, error signalling, gate keeper (operator) access control, off-chain data injection and issuance / redemption semantics.
 
-This standard can be optionally extended to implement ERC777 and ERC20 (see Backwards Compatibility in ERC 1410 #1410).
+This standard inherits from ERC-20 (#20) and could be easily extended to meet the ERC-777 (#777) standard if needed.
 
 ## Motivation
 
@@ -39,23 +41,18 @@ The following requirements have been compiled following discussions with parties
 - MUST have a standard interface to query if a transfer would be successful and return a reason for failure.
 - MUST be able to perform forced transfer for legal action or fund recovery.
 - MUST emit standard events for issuance and redemption.
-- MUST be able to attach metadata to a subset of a token holder's balance such as special shareholder rights or data for transfer restrictions.
-- MUST be able to modify metadata at time of transfer based on off-chain data, on-chain data and the parameters of the transfer.
 - MAY require signed data to be passed into a transfer transaction in order to validate it on-chain.
 - SHOULD NOT restrict the range of asset classes across jurisdictions which can be represented.
-- SHOULD be ERC20 and ERC777 compatible.
+- MUST be ERC-20 compatible.
+- COULD be ERC-777 compatible.
 
-## Abstract
+## Rationale
 
-There are many types of securities which, although they represent the same underlying asset, need to have differentiating data tied to them.
+### Document Management
 
-This additional metadata implicitly renders these securities non-fungible, but in practice this data is usually applied to a subset of the security rather than an individual security. The ability to partition a token holder's balance into tranches, each with separate metadata is addressed in the Partially-Fungible Token section.
+Being able to attach documents to a security token allows the issuer, or other authorised entities, to communicate documentation associated with the security to token holders. An attached document can optionally include a hash of its contents in order to provide an immutability guarantee.
 
-For example a token holder's balance may be split in two: Those tokens issued during the primary issuance, and those received through secondary trading.
-
-Security token contracts can reference this metadata in order to apply additional logic to determine whether or not a transfer is valid, and determine the metadata that should be associated with the tokens once transferred into the receiver's balance.
-
-To represent securities metadata we use the ERC 1410 (#1410) - Partially Fungible Token Standard.
+### Transfer Restrictions
 
 Transfers of securities can fail for a variety of reasons in contrast to utility tokens which generally only require the sender to have a sufficient balance.
 
@@ -63,9 +60,17 @@ These conditions could be related to metadata of the securities being transferre
 
 For ERC20 / ERC777 tokens, the `balanceOf` and `allowance` functions provide a way to check that a transfer is likely to succeed before executing the transfer, which can be executed both on and off-chain.
 
-For tokens representing securities the standard introduces a function `canSend` which provides a more general purpose way to achieve this when the reasons for failure are more complex; and a function of the whole transfer (i.e. includes any data sent with the transfer and the receiver of the securities).
+For tokens representing securities the standard introduces a function `canTransfer` which provides a more general purpose way to achieve this when the reasons for failure are more complex; and a function of the whole transfer (i.e. includes any data sent with the transfer and the receiver of the securities).
+
+In order to support off-chain data inputs to transfer functions, transfer functions are extended to `transferWithData` / `transferFromWithData` which can optionally take an additional `bytes _data` parameter.
 
 In order to provide a richer result than just true or false, a byte return code is returned. This allows us to give a reason for why the transfer failed, or at least which category of reason the failure was in. The ability to query documents and the expected success of a transfer is included in Security Token section.
+
+### Transparent Control
+
+A token representing ownership in a security may require authorised operators to have additional controls over the tokens.
+
+This includes the ability to issue additional supply, as well as make forced transfers of tokens. The standard allows these controls to be managed and also critically ensures their transparency. If an issuer requires the ability to issue additional tokens, or make forced transfers (operator access) then these rights can be transparently assessed rather than being implemented in a bespoke or obfuscated manner.
 
 ## Specification
 
@@ -77,30 +82,54 @@ These functions are used to manage a library of documents associated with the to
 
 A document is associated with a short name (represented as a `bytes32`) and can optionally have a hash of the document contents associated with it on-chain.
 
+It is referenced via a generic URI that could point to a website or other document portal.
+
+`setDocument` MUST emit a `Document` event with details of the document being attached or modified.
+
 ``` solidity
 function getDocument(bytes32 _name) external view returns (string, bytes32);
 function setDocument(bytes32 _name, string _uri, bytes32 _documentHash) external;
 ```
 
-### Transfer Validity
+### Restricted Transfers
 
-#### canSend
+#### canTransfer
 
 Transfers of securities may fail for a number of reasons, for example relating to:
   - the identity of the sender or receiver of the tokens
-  - limits placed on the specific tokens being transferred (i.e. limits associated with the tranche of the tokens being tranferred)
+  - limits placed on the specific tokens being transferred (i.e. lockups on certain quantities of token)
   - limits related to the overall state of the token (i.e. total number of investors)
 
 The standard provides an on-chain function to determine whether a transfer will succeed, and return details indicating the reason if the transfer is not valid.
 
-These rules can either be defined using smart contracts and on-chain data, or rely on `_data` passed as part of the `sendByTranche` function which could represent authorisation for the transfer (e.g. a signed message by a transfer agent attesting to the validity of this specific transfer).
+These rules can either be defined using smart contracts and on-chain data, or rely on `_data` passed as part of the `transferWithData` function which could represent authorisation for the transfer (e.g. a signed message by a transfer agent attesting to the validity of this specific transfer).
 
-The function will return both a ESC (Ethereum Status Code) following the EIP-1066 standard, and an additional `bytes32` parameter that can be used to define application specific reason codes with additional details (for example the transfer restriction rule responsible for making the send operation invalid).
+The function will return both a ESC (Ethereum Status Code) following the EIP-1066 standard, and an additional `bytes32` parameter that can be used to define application specific reason codes with additional details (for example the transfer restriction rule responsible for making the transfer operation invalid).
 
-It also returns the destination tranche of the tokens being transferred in an analogous way to `sendByTranche`.
+If `bytes _data` is empty, then this corresponds to a check on whether a `transfer` (or `transferFrom`) request will succeed, if `bytes _data` is populated, then this corresponds to a check on `transferWithData` (or `transferFromWithData`) will succeed.
 
 ``` solidity
-function canSend(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data) external view returns (byte, bytes32, bytes32);
+function canTransfer(address _from, address _to, uint256 _amount, bytes _data) external view returns (byte, bytes32);
+```
+
+#### transferWithData
+
+Transfer restrictions can take many forms and typically involve on-chain rules or whitelists. However for many types of approved transfers, maintaining an on-chain list of approved transfers can be cumbersome and expensive. An alternative is the co-signing approach, where in addition to the token holder approving a token transfer, and authorised entity provides signed data which further validates the transfer.
+
+The `bytes _data` allows arbitrary data to be submitted alongside the transfer, for the token contract to interpret or record. This could be signed data authorising the transfer (e.g. a dynamic whitelist) but is flexible enough to accomadate other use-cases.
+
+`transferWithData` MUST emit a `Transfer` event with details of the transfer.
+
+``` solidity
+function transferWithData(address _to, uint256 _amount, bytes _data) external;
+```
+
+#### operatorTransferWithData
+
+This is the operator driven analogy to the `transferWithData` function.
+
+``` solidity
+function operatorTransferWithData(address _from, address _to, uint256 _amount, bytes _data, bytes _operatorData) external;
 ```
 
 ### Token Issuance
@@ -111,50 +140,54 @@ A security token issuer can specify that issuance has finished for the token (i.
 
 If a token returns FALSE for `isIssuable()` then it MUST always return FALSE in the future.
 
+If a token returns FALSE for `isIssuable()` then it MUST never allow additional tokens to be issued.
+
 ``` solidity
 function isIssuable() external view returns (bool);
 ```
 
-#### issueByTranche
+#### issue
 
 This function must be called to increase the total supply.
 
-When called, this function MUST emit the `IssuedByTranche` event.
+The `bytes _data` parameter can be used to inject off-chain data (e.g. signed data) to authorise or authenticate the issuance and receiver of issued tokens.
+
+When called, this function MUST emit the `Issued` event.
 
 ``` solidity
-function issueByTranche(bytes32 _tranche, address _tokenHolder, uint256 _amount, bytes _data) external;
+function issue(address _tokenHolder, uint256 _amount, bytes _data) external;
 ```
 
 ### Token Redemption
 
-#### operatorRedeemByTranche
+#### operatorRedeem
 
-Allows an operator to burn or redeem tokens on behalf of a token holder.
+Allows an operator to redeem (burn) tokens on behalf of a token holder.
 
-The burnt or redeemed tokens must be subtracted from the total supply and the balance of the token holder. The token burn should act like sending tokens and be subject to the same conditions. The `BurnedByTranche` event must be emitted every time this function is called.
+The redeemed tokens must be subtracted from the total supply and the balance of the token holder. The token redemption should act like sending tokens and be subject to the same conditions. The `Redeemed` event must be emitted every time this function is called.
 
 ``` solidity
-function operatorRedeemByTranche(bytes32 _tranche, address _tokenHolder, uint256 _amount, bytes _operatorData) external;
+function operatorRedeem(address _tokenHolder, uint256 _amount, bytes _data, bytes _operatorData) external;
 ```
 
-#### redeemByTranche
+#### redeem
 
-Allows a token holder to burn or redeem tokens.
+Allows a token holder to redeem tokens.
 
-The burnt or redeemed tokens must be subtracted from the total supply and the balance of the token holder. The token burn should act like sending tokens and be subject to the same conditions. The `BurnedByTranche` event must be emitted every time this function is called.
+The redeemed tokens must be subtracted from the total supply and the balance of the token holder. The token redemption should act like sending tokens and be subject to the same conditions. The `Redeemed` event must be emitted every time this function is called.
 
 ``` solidity
-function redeemByTranche(bytes32 _tranche, uint256 _amount, bytes _data) external;
+function redeem(uint256 _amount, bytes _data) external;
 ```
 
 ### Controller Operation
 
-In order to provide transparency over whether `defaultOperators` or `defaultOperatorsByTranche` can be defined by the issuer, the function `isControllable` can be used.
+In order to provide transparency over whether `defaultOperators` can be defined by the issuer, the function `isControllable` can be used.
 
 If a token returns FALSE for `isControllable()` then it MUST:
   - always return FALSE in the future.
-  - return empty lists for `defaultOperators` and `defaultOperatorsByTranche`
-  - never add addresses for `defaultOperators` and `defaultOperatorsByTranche`
+  - return empty lists for `defaultOperators`
+  - never add new addresses for `defaultOperators`
 
 In other words, if an issuer sets `isControllable` to return FALSE, then there can be no default operators for the token.
 
@@ -168,28 +201,56 @@ function isControllable() external view returns (bool);
 /// @title IERCST Security Token Standard (EIP 1400)
 /// @dev See https://github.com/SecurityTokenStandard/EIP-Spec
 
-interface IERC1400 is IERCPFT, IERC20 {
+interface IERCST is IERC20 {
 
     // Document Management
     function getDocument(bytes32 _name) external view returns (string, bytes32);
     function setDocument(bytes32 _name, string _uri, bytes32 _documentHash) external;
 
+    // Transfers
+    function transferWithData(address _to, uint256 _value, bytes _data) external;
+    function transferFromWithData(address _from, address _to, uint256 _value, bytes _data) external;
+
     // Controller Operation
     function isControllable() external view returns (bool);
+    function controllerTransfer(address _from, address _to, uint256 _value, bytes _data, bytes _operatorData) external;
+
+[delete]
+    // Operator Management
+    function defaultOperators() external view returns (address[]);
+    function isOperator(address _operator, address _tokenHolder) external view returns (bool);
+    function authorizeOperator(address _operator) external;
+    function revokeOperator(address _operator) external;
+[/delete]
 
     // Token Issuance
     function isIssuable() external view returns (bool);
-    function issueByTranche(bytes32 _tranche, address _tokenHolder, uint256 _amount, bytes _data) external;
-    event IssuedByTranche(bytes32 indexed tranche, address indexed operator, address indexed to, uint256 amount, bytes data, bytes operatorData);
+    function issue(address _tokenHolder, uint256 _amount, bytes _data) external;
+    event Issued(address indexed operator, address indexed to, uint256 amount, bytes data);
 
     // Token Redemption
-    function redeemByTranche(bytes32 _tranche, uint256 _amount, bytes _data) external;
-    function operatorRedeemByTranche(bytes32 _tranche, address _tokenHolder, uint256 _amount, bytes _operatorData) external;
-    event RedeemedByTranche(bytes32 indexed tranche, address indexed operator, address indexed from, uint256 amount, bytes operatorData);
+    function redeem(uint256 _amount, bytes _data) external;
+    function redeemFrom(address _tokenHolder, uint256 _amount, bytes _data) external;
+    event Redeemed(address indexed operator, address indexed from, uint256 amount, bytes data);
 
     // Transfer Validity
-    function canSendByTranche(address _from, address _to, bytes32 _tranche, uint256 _amount, bytes _data) external view returns (byte, bytes32, bytes32);
-    function canSend(address _from, address _to, uint256 _amount, bytes _data) external view returns (byte, bytes32);
+    function canTransfer(address _from, address _to, uint256 _amount, bytes _data) external view returns (byte, bytes32);
+
+    // Transfer Events
+    event ControllerTransfer(
+        address controller,
+        address indexed from,
+        address indexed to,
+        uint256 amount,
+        bytes data,
+        bytes operatorData
+    );
+
+    event Document(
+        bytes32 name,
+        string uri,
+        bytes32 documentHash
+    );
 
 }
 ```
@@ -245,7 +306,7 @@ To improve the token holder experience, `canSend` MUST return a reason byte code
 
 #### On-chain vs. Off-chain Transfer Restrictions
 
-The rules determining if a security token can be sent may be self-executing (e.g. a rule which limits the maximum number of investors in the security) or require off-chain inputs (e.g. an explicit broker approval for the trade). To facilitate the latter, the `sendByTranche` and `canSend` functions accept an additional `bytes _data` parameter which can be signed by an approved party and used to validate a transfer.
+The rules determining if a security token can be sent may be self-executing (e.g. a rule which limits the maximum number of investors in the security) or require off-chain inputs (e.g. an explicit broker approval for the trade). To facilitate the latter, the `transferByTranche` and `canSend` functions accept an additional `bytes _data` parameter which can be signed by an approved party and used to validate a transfer.
 
 The specification for this data is outside the scope of this standard and would be implementation specific.
 
