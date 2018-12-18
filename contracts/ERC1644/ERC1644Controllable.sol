@@ -16,7 +16,7 @@ contract ERC1644Controllable is Ownable {
     event FinalizedControllerFeature();
 
     // Modifier to check whether the msg.sender is authorised or not 
-    modifier OnlyController() {
+    modifier onlyController() {
         require(msg.sender == controller, "Not Authorised");
         _;
     }
