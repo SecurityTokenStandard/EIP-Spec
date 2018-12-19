@@ -7,7 +7,10 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "truffle compile --optimize-runs 200",
+    "ganache-cli": "node_modules/.bin/ganache-cli -i 15 --gasLimit 8000000",
+    "migrate:local": "truffle migrate --network=development --reset --all"
   },
   "repository": {
     "type": "git",
@@ -28,5 +31,18 @@
   "bugs": {
     "url": "https://github.com/SecurityTokenStandard/EIP-Spec/issues"
   },
-  "homepage": "https://github.com/SecurityTokenStandard/EIP-Spec#readme"
+  "homepage": "https://github.com/SecurityTokenStandard/EIP-Spec#readme",
+  "dependencies": {
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "babel-preset-stage-3": "^6.24.1",
+    "babel-register": "^6.26.0",
+    "openzeppelin-solidity": "^2.0.0"
+  },
+  "devDependencies": {
+    "bignumber.js": "^8.0.1",
+    "ganache-cli": "^6.2.4",
+    "web3": "^1.0.0-beta.37"
+  }
 }
