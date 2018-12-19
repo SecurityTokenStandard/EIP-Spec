@@ -21,6 +21,11 @@ contract ERC1643 is IERC1643, Ownable {
     // Array use to store all the document name present in the contracts
     bytes32[] _docNames;
     
+    /// Constructor
+    constructor() public {
+
+    }
+    
     /**
      * @notice Used to attach a new document to the contract, or update the URI or hash of an existing attached document
      * @dev Can only be executed by the owner of the contract.
@@ -30,7 +35,7 @@ contract ERC1643 is IERC1643, Ownable {
      */
     function setDocument(bytes32 _name, string _uri, bytes32 _documentHash) external onlyOwner {
         require(_name != bytes32(0), "Zero value is not allowed");
-        require(keccak256(_uri) != keccak256(""), "Should not be a empty uri");
+        require(bytes(_uri).length > 0, "Should not be a empty uri");
         if (_documents[_name].lastModified == uint256(0)) {
             _docNames.push(_name);
             _docIndexes[_name] = _docNames.length;
