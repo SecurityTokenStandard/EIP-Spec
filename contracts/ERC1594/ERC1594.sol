@@ -14,7 +14,7 @@ contract ERC1594 is IERC1594, ERC20Token, Ownable {
     // Implementers need to implement one more function to reset the value of `issuance` variable
     // to false. That function is not a part of the standard (EIP-1594) as it is depend on the various factors
     // issuer, followed compliance rules etc. So issuers have the choice how they want to close the issuance. 
-    bool private issuance = true;
+    bool internal issuance = true;
     
     /// Constructor
     constructor() public  {
@@ -178,7 +178,7 @@ contract ERC1594 is IERC1594, ERC20Token, Ownable {
         else if (_to == address(0))
             return (false, 0x57, bytes32(0));
 
-        else if (!KindMath.sub(_balances[msg.sender], _value) || !KindMath.add(_balances[_to], _value))
+        else if (!KindMath.add(_balances[_to], _value))
             return (false, 0x50, bytes32(0));
 
         _transferWithData(msg.sender, _to, _value, _data);
@@ -201,16 +201,13 @@ contract ERC1594 is IERC1594, ERC20Token, Ownable {
         if (_value > _allowed[_from][msg.sender])
             return (false, 0x53, bytes32(0));
 
-        else if (!KindMath.sub(_allowed[_from][msg.sender], _value))
-            return (false, 0x50, bytes32(0));
-
         else if (_balances[_from] < _value)
             return (false, 0x52, bytes32(0));
 
         else if (_to == address(0))
             return (false, 0x57, bytes32(0));
 
-        else if (!KindMath.sub(_balances[_from], _value) || !KindMath.add(_balances[_to], _value))
+        else if (!KindMath.add(_balances[_to], _value))
             return (false, 0x50, bytes32(0));
 
         _transferFromWithData(_from, _to, _value, _data);
