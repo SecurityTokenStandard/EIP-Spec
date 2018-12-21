@@ -147,17 +147,15 @@ contract ERC1594 is IERC1594, ERC20Token, Ownable {
      * @notice This function redeem an amount of the token of a msg.sender. For doing so msg.sender may incentivize
      * using different ways that could be implemented with in the `redeem` function definition. But those implementations
      * are out of the scope of the ERC1594. 
-     * @dev It only be called by the token issuer or the operator defined by the issuer. ERC1594 doesn't have
-     * have the any logic related to operator but its superset ERC1400 have the operator logic and this function
-     * is allowed to call by the operator.
+     * @dev It is analogy to `transferFrom`
      * @param _tokenHolder The account whose tokens gets redeemed.
      * @param _value The amount of tokens need to be redeemed
      * @param _data The `bytes _data` it can be used in the token contract to authenticate the redemption.
      */
-    function redeemFrom(address _tokenHolder, uint256 _value, bytes _data) external onlyOwner {
+    function redeemFrom(address _tokenHolder, uint256 _value, bytes _data) external {
         // Add a function to validate the `_data` parameter
         _burnFrom(_tokenHolder, _value);
-        emit Redeemed(msg.sender, msg.sender, _value, _data);
+        emit Redeemed(msg.sender, _tokenHolder, _value, _data);
     }
 
     /**
