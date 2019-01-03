@@ -69,7 +69,7 @@ contract ERC20Token is IERC20 {
      * @param value The amount to be transferred.
      */
     function transfer(address to, uint256 value) public returns (bool) {
-        _transferRestricted(msg.sender, to, value);
+        _transfer(msg.sender, to, value);
         return true;
     }
 
@@ -87,11 +87,22 @@ contract ERC20Token is IERC20 {
         public
         returns (bool)
     {
-        require(value <= _allowed[from][msg.sender]);
-
-        _allowed[from][msg.sender] = _allowed[from][msg.sender].sub(value);
-        _transferRestricted(from, to, value);
+        _transferFrom(msg.sender, from, to, value);
         return true;
+    }
+
+    function _transferFrom(
+        address spender,
+        address from,
+        address to,
+        uint256 value
+    )
+        internal
+    {
+        require(value <= _allowed[from][spender]);
+
+        _allowed[from][spender] = _allowed[from][spender].sub(value);
+        _transfer(from, to, value);
     }
 
     /**
@@ -142,12 +153,6 @@ contract ERC20Token is IERC20 {
         return true;
     }
 
-    function _transferRestricted(address from, address to, uint256 value) internal {
-        require(value <= _balances[from]);
-        require(to != address(0));
-        _transfer(from, to, value);
-    }
-
     /**
     * @dev Transfer token for a specified addresses
     * @param from The address to transfer from.
@@ -155,21 +160,11 @@ contract ERC20Token is IERC20 {
     * @param value The amount to be transferred.
     */
     function _transfer(address from, address to, uint256 value) internal {
+        require(value <= _balances[from]);
+        require(to != address(0));
         _balances[from] = _balances[from].sub(value);
         _balances[to] = _balances[to].add(value);
         emit Transfer(from, to, value);
-    }
-
-    function _transferFrom(
-        address spender,
-        address from,
-        address to,
-        uint256 value
-    )
-        internal
-    {
-        _allowed[from][spender] = _allowed[from][spender].sub(value);
-        _transfer(from, to, value);
     }
 
     /**

@@ -33,7 +33,8 @@ contract ERC1594 is IERC1594, ERC20Token, Ownable {
      * (e.g. a dynamic whitelist) but is flexible enough to accomadate other use-cases.
      */
     function transferWithData(address _to, uint256 _value, bytes _data) external {
-        _transferWithDataRestricted(msg.sender, _to, _value, _data);
+        // Add a function to validate the `_data` parameter
+        _transfer(msg.sender, _to, _value);
     }
 
     /**
@@ -50,55 +51,6 @@ contract ERC1594 is IERC1594, ERC20Token, Ownable {
      * (e.g. a dynamic whitelist) but is flexible enough to accomadate other use-cases.
      */
     function transferFromWithData(address _from, address _to, uint256 _value, bytes _data) external {
-        _transferFromWithDataRestricted(_from, _to, _value, _data);
-    }
-
-    /**
-     * @notice Internal function of `transferWithData()` which consist all the checks related to balance and zero value.
-     * @param _from address The address which you want to send tokens from
-     * @param _to address The address which you want to transfer to
-     * @param _value uint256 the amount of tokens to be transferred
-     * @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
-     */
-    function _transferWithDataRestricted(address _from, address _to, uint256 _value, bytes _data) internal {
-        // Add a function to validate the `_data` parameter with restriction
-        _transferRestricted(_from, _to, _value);
-    }
-
-    /**
-     * @notice Internal function of `transferFromWithData()` which consist all the checks related to balance and zero value.
-     * @param _from address The address which you want to send tokens from
-     * @param _to address The address which you want to transfer to
-     * @param _value uint256 the amount of tokens to be transferred
-     * @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
-     */
-    function _transferFromWithDataRestricted(address _from, address _to, uint256 _value, bytes _data) internal {
-        // Add function to validate the `_data` parameter with restrictions
-        transferFrom(_from, _to, _value);
-    }
-
-    /**
-     * @notice Internal function of `transferWithData()` which doesn't consist all the sanity checks
-     * related to balance and zero value.
-     * @param _from address The address which you want to send tokens from
-     * @param _to address The address which you want to transfer to
-     * @param _value uint256 the amount of tokens to be transferred
-     * @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
-     */
-    function _transferWithData(address _from, address _to, uint256 _value, bytes _data) internal {
-        // Add a function to validate the `_data` parameter
-        _transfer(_from, _to, _value);
-    }
-
-    /**
-     * @notice Internal function of `transferFromWithData()` which doesn't consist all the sanity checks
-     * related to balance and zero value.
-     * @param _from address The address which you want to send tokens from
-     * @param _to address The address which you want to transfer to
-     * @param _value uint256 the amount of tokens to be transferred
-     * @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
-     */
-    function _transferFromWithData(address _from, address _to, uint256 _value, bytes _data) internal {
         // Add a function to validate the `_data` parameter
         _transferFrom(msg.sender, _from, _to, _value);
     }
@@ -178,8 +130,6 @@ contract ERC1594 is IERC1594, ERC20Token, Ownable {
 
         else if (!KindMath.add(_balances[_to], _value))
             return (false, 0x50, bytes32(0));
-
-        _transferWithData(msg.sender, _to, _value, _data);
         return (true, 0x51, bytes32(0));
     }
 
@@ -207,8 +157,6 @@ contract ERC1594 is IERC1594, ERC20Token, Ownable {
 
         else if (!KindMath.add(_balances[_to], _value))
             return (false, 0x50, bytes32(0));
-
-        _transferFromWithData(_from, _to, _value, _data);
         return (true, 0x51, bytes32(0));
     }
 

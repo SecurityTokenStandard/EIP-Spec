@@ -127,7 +127,7 @@ const zero_address = "0x0000000000000000000000000000000000000000";
 
         it("\tShould successfully transfer the tokens from one holder to another and verify the `Transfer` event data\n", async() => {
             let data = await erc1594Token.canTransfer.call(tokenHolder2, web3.utils.toWei("100"), empty_data, {from: tokenHolder1});
-              
+
             assert.isTrue(data[0]);
             assert.equal(data[1], 0x51);
 
