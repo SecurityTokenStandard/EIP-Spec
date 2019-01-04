@@ -12,7 +12,7 @@ interface IERC1643 {
     function getAllDocuments() external view returns (bytes32[]);
 
     // Document Events
-    event DocumentRemoved(bytes32 indexed _name, string _uri, bytes32 _documentHash, uint256 _timestamp);
-    event DocumentUpdated(bytes32 indexed _name, string _uri, bytes32 _documentHash, uint256 _timestamp);
+    event DocumentRemoved(bytes32 indexed _name, string _uri, bytes32 _documentHash);
+    event DocumentUpdated(bytes32 indexed _name, string _uri, bytes32 _documentHash);
 
 }

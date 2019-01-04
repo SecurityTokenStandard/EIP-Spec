@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "../ERC1644/ERC1644.sol";
+import "../ERC1644.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Burnable.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";
 
