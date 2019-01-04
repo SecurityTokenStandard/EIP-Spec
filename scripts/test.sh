@@ -34,7 +34,7 @@ local accounts=(
     --account="0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501209,1000000000000000000000000"
 )
 
-if [ "$COVERAGE" = true ] || [ "$TRAVIS_PULL_REQUEST" > 0 ] && [ "$NOT_FORK" != true ]; then
+if [ "$COVERAGE" = true ]; then
     node_modules/.bin/testrpc-sc --gasLimit 0xfffffffffff --port "$testrpc_port" "${accounts[@]}" > /dev/null &
 else
     node_modules/.bin/ganache-cli --gasLimit 8000000 "${accounts[@]}" > /dev/null &
@@ -49,4 +49,5 @@ else
   echo "Starting our own testrpc instance"
   start_testrpc
 fi
-    node_modules/.bin/truffle test `find test/*.js`
+truffle version
+node_modules/.bin/truffle test "$@"
