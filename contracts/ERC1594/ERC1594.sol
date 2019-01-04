@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 import "./IERC1594.sol";
-import "./ERC20Token.sol";
+import "../ERC20Token.sol";
 import "../math/KindMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
