@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "scripts/test.sh 2> /dev/null",
     "compile": "truffle compile --optimize-runs 200",
     "ganache-cli": "node_modules/.bin/ganache-cli -i 15 --gasLimit 8000000",
     "migrate:local": "truffle migrate --network=development --reset --all"
@@ -43,6 +43,7 @@
   "devDependencies": {
     "bignumber.js": "^8.0.1",
     "ganache-cli": "6.1.8",
-    "web3": "^1.0.0-beta.37"
+    "web3": "^1.0.0-beta.37",
+    "truffle": "4.1.14"
   }
 }
