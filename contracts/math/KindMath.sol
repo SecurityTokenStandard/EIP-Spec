@@ -3,14 +3,14 @@ pragma solidity ^0.4.24;
 /**
  * @title KindMath
  * @notice ref. https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/math/SafeMath.sol
- * @dev Math operations with safety checks that throw on error
+ * @dev Math operations with safety checks that returns boolean
  */
 library KindMath {
 
     /**
      * @dev Multiplies two numbers, return false on overflow.
      */
-    function mul(uint256 a, uint256 b) internal pure returns (bool) {
+    function checkMul(uint256 a, uint256 b) internal pure returns (bool) {
         // Gas optimization: this is cheaper than requireing 'a' not being zero, but the
         // benefit is lost if 'b' is also tested.
         // See: https://github.com/OpenZeppelin/openzeppelin-solidity/pull/522
@@ -28,7 +28,7 @@ library KindMath {
     /**
     * @dev Subtracts two numbers, return false on overflow (i.e. if subtrahend is greater than minuend).
     */
-    function sub(uint256 a, uint256 b) internal pure returns (bool) {
+    function checkSub(uint256 a, uint256 b) internal pure returns (bool) {
         if (b <= a)
             return true;
         else
@@ -38,7 +38,7 @@ library KindMath {
     /**
     * @dev Adds two numbers, return false on overflow.
     */
-    function add(uint256 a, uint256 b) internal pure returns (bool) {
+    function checkAdd(uint256 a, uint256 b) internal pure returns (bool) {
         uint256 c = a + b;
         if (c < a)
             return false;

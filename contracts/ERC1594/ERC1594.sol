@@ -122,13 +122,14 @@ contract ERC1594 is IERC1594, ERC20Token, Ownable {
      * @return bytes32 Application specific reason code 
      */
     function canTransfer(address _to, uint256 _value, bytes _data) external view returns (bool, byte, bytes32) {
+        // Add a function to validate the `_data` parameter
         if (_balances[msg.sender] < _value)
             return (false, 0x52, bytes32(0));
 
         else if (_to == address(0))
             return (false, 0x57, bytes32(0));
 
-        else if (!KindMath.add(_balances[_to], _value))
+        else if (!KindMath.checkAdd(_balances[_to], _value))
             return (false, 0x50, bytes32(0));
         return (true, 0x51, bytes32(0));
     }
@@ -146,6 +147,7 @@ contract ERC1594 is IERC1594, ERC20Token, Ownable {
      * @return bytes32 Application specific reason code 
      */
     function canTransferFrom(address _from, address _to, uint256 _value, bytes _data) external view returns (bool, byte, bytes32) {
+        // Add a function to validate the `_data` parameter
         if (_value > _allowed[_from][msg.sender])
             return (false, 0x53, bytes32(0));
 
@@ -155,7 +157,7 @@ contract ERC1594 is IERC1594, ERC20Token, Ownable {
         else if (_to == address(0))
             return (false, 0x57, bytes32(0));
 
-        else if (!KindMath.add(_balances[_to], _value))
+        else if (!KindMath.checkAdd(_balances[_to], _value))
             return (false, 0x50, bytes32(0));
         return (true, 0x51, bytes32(0));
     }
