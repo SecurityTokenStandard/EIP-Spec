@@ -41,7 +41,7 @@ contract ERC1643 is IERC1643, Ownable {
             _docIndexes[_name] = _docNames.length;
         }
         _documents[_name] = Document(_documentHash, now, _uri);
-        emit DocumentUpdated(_name, _uri, _documentHash, now);
+        emit DocumentUpdated(_name, _uri, _documentHash);
     }
 
     /**
@@ -57,7 +57,7 @@ contract ERC1643 is IERC1643, Ownable {
             _docIndexes[_name] = index + 1; 
         }
         _docNames.length--;
-        emit DocumentRemoved(_name, _documents[_name].uri, _documents[_name].docHash, now);
+        emit DocumentRemoved(_name, _documents[_name].uri, _documents[_name].docHash);
         delete _documents[_name];
     }
 

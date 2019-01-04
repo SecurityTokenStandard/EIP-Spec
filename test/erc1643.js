@@ -1,4 +1,3 @@
-import latestTime from "./helpers/latestTime";
 import { catchRevert } from "./helpers/exceptions";
 import { takeSnapshot, revertToSnapshot } from "./helpers/time";
 
@@ -59,7 +58,6 @@ const empty_hash = "0x0000000000000000000000000000000000000000000000000000000000
               assert.equal(web3.utils.toUtf8(tx.logs[0].args._name), "doc1");
               assert.equal(tx.logs[0].args._uri, uri);
               assert.equal(web3.utils.toUtf8(tx.logs[0].args._documentHash), docHash);
-              assert.equal((tx.logs[0].args._timestamp).toNumber(), await latestTime());
               assert.equal((await erc1643.getAllDocuments.call()).length, 1);
           });
 
@@ -68,7 +66,6 @@ const empty_hash = "0x0000000000000000000000000000000000000000000000000000000000
               assert.equal(web3.utils.toUtf8(tx.logs[0].args._name), "doc2");
               assert.equal(tx.logs[0].args._uri, uri);
               assert.equal(tx.logs[0].args._documentHash, empty_hash);
-              assert.equal((tx.logs[0].args._timestamp).toNumber(), await latestTime());
               assert.equal((await erc1643.getAllDocuments.call()).length, 2);
           });
 
@@ -77,7 +74,6 @@ const empty_hash = "0x0000000000000000000000000000000000000000000000000000000000
               assert.equal(web3.utils.toUtf8(tx.logs[0].args._name), "doc2");
               assert.equal(tx.logs[0].args._uri, "https://www.bts.l");
               assert.equal(tx.logs[0].args._documentHash, empty_hash);
-              assert.equal((tx.logs[0].args._timestamp).toNumber(), await latestTime());
               assert.equal((await erc1643.getAllDocuments.call()).length, 2);
           });
 
@@ -133,7 +129,6 @@ const empty_hash = "0x0000000000000000000000000000000000000000000000000000000000
               assert.equal(web3.utils.toUtf8(tx.logs[0].args._name), "doc3");
               assert.equal(tx.logs[0].args._uri, "https://www.bts.l");
               assert.equal(tx.logs[0].args._documentHash, empty_hash);
-              assert.equal((tx.logs[0].args._timestamp).toNumber(), await latestTime());
               assert.equal((await erc1643.getAllDocuments.call()).length, 2);
 
               // remove the document that is not last in the `docsName` array
@@ -141,7 +136,6 @@ const empty_hash = "0x0000000000000000000000000000000000000000000000000000000000
               assert.equal(web3.utils.toUtf8(tx.logs[0].args._name), "doc1");
               assert.equal(tx.logs[0].args._uri, uri);
               assert.equal(web3.utils.toUtf8(tx.logs[0].args._documentHash), docHash);
-              assert.equal((tx.logs[0].args._timestamp).toNumber(), await latestTime());
               assert.equal((await erc1643.getAllDocuments.call()).length, 1);
           });
 
