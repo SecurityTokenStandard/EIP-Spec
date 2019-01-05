@@ -79,9 +79,6 @@ contract ERC1410Basic {
     /// @return The partition to which the transferred tokens were allocated for the _to address
     function transferByPartition(bytes32 _partition, address _to, uint256 _value, bytes _data) external returns (bytes32) {
         // Add a function to verify the `_data` parameter
-        require(_validPartition(_partition, msg.sender), "Invalid partition"); 
-        require(partitions[msg.sender][partitionToIndex[msg.sender][_partition]].amount >= _value, "Insufficient balance");
-        require(_to != address(0), "0x address not allowed");
         // TODO: Need to create the bytes division of the `_partition` so it can be easily findout in which receiver's partition
         // token will transfered. For current implementation we are assuming that the receiver's partition will be same as sender's
         // as well as it also pass the `_validPartition()` check.
@@ -116,6 +113,10 @@ contract ERC1410Basic {
     }
 
     function _transferByPartition(address _from, address _to, uint256 _value, bytes32 _partition, bytes _data, address _operator, bytes _operatorData) internal {
+        require(_validPartition(_partition, _from), "Invalid partition"); 
+        require(partitions[_from][partitionToIndex[_from][_partition]].amount >= _value, "Insufficient balance");
+        require(_to != address(0), "0x address not allowed");
+
         uint256 _fromIndex = partitionToIndex[_from][_partition];
         uint256 _toIndex = partitionToIndex[_to][_partition];
         // Changing the state values
