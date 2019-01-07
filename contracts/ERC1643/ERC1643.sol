@@ -52,8 +52,8 @@ contract ERC1643 is IERC1643, Ownable {
             _docIndexes[_docNames[index]] = index;
         }
         _docNames.length--;
-        delete _documents[_name];
         emit DocumentRemoved(_name, _documents[_name].uri, _documents[_name].documentHash);
+        delete _documents[_name];
     }
 
     /**
