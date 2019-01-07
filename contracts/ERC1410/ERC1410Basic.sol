@@ -46,7 +46,7 @@ contract ERC1410Basic {
     /// @param _tokenHolder An address for whom to query the balance
     /// @return The number of tokens owned by `_tokenHolder`, possibly zero
     function balanceOf(address _tokenHolder) external view returns (uint256) {
-        balances[_tokenHolder];
+        return balances[_tokenHolder];
     }
 
     /// @notice Counts the balance associated with a specific partition assigned to an tokenHolder
@@ -55,7 +55,7 @@ contract ERC1410Basic {
     /// @return The number of tokens owned by `_tokenHolder` with the metadata associated with `_partition`, possibly zero
     function balanceOfByPartition(bytes32 _partition, address _tokenHolder) external view returns (uint256) {
         if (_validPartition(_partition, _tokenHolder))
-            return partitions[_tokenHolder][partitionToIndex[_tokenHolder][_partition]].amount;
+            return partitions[_tokenHolder][partitionToIndex[_tokenHolder][_partition] - 1].amount;
         else
             return 0;
     }
@@ -81,7 +81,8 @@ contract ERC1410Basic {
         // Add a function to verify the `_data` parameter
         // TODO: Need to create the bytes division of the `_partition` so it can be easily findout in which receiver's partition
         // token will transfered. For current implementation we are assuming that the receiver's partition will be same as sender's
-        // as well as it also pass the `_validPartition()` check.
+        // as well as it also pass the `_validPartition()` check. In this particular case we are also assuming that reciever has the
+        // some tokens of the same partition as well (To avoid the array index out of bound error).
         // Note- There is no operator used for the execution of this call so `_operator` value in
         // in event is address(0) same for the `_operatorData`
         _transferByPartition(msg.sender, _to, _value, _partition, _data, address(0), "0x0");

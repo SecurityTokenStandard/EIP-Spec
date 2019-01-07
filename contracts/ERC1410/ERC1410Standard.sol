@@ -64,7 +64,7 @@ contract ERC1410Standard is IERC1410, ERC1410Operator, Ownable {
         emit RedeemedByPartition(_partition, _operator, _from, _value, _data, _operatorData);
     }
 
-    function _validateParams(bytes32 _partition, uint256 _value) internal {
+    function _validateParams(bytes32 _partition, uint256 _value) internal pure {
         require(_value != uint256(0), "Zero value not allowed");
         require(_partition != bytes32(0), "Invalid partition");
     }
