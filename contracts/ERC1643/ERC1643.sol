@@ -9,7 +9,7 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 contract ERC1643 is IERC1643, Ownable {
 
     struct Document {
-        bytes32 docHash; // Hash of the document
+        bytes32 documentHash; // Hash of the document
         uint256 lastModified; // Timestamp at which document details was last modified
         string uri; // URI of the document that exist off-chain
     }
@@ -19,13 +19,8 @@ contract ERC1643 is IERC1643, Ownable {
     // mapping to store the document name indexes
     mapping(bytes32 => uint256) internal _docIndexes;
     // Array use to store all the document name present in the contracts
-    bytes32[] _docNames;
-    
-    /// Constructor
-    constructor() public {
+    bytes32[] internal _docNames;
 
-    }
-    
     /**
      * @notice Used to attach a new document to the contract, or update the URI or hash of an existing attached document
      * @dev Can only be executed by the owner of the contract.
@@ -37,8 +32,8 @@ contract ERC1643 is IERC1643, Ownable {
         require(_name != bytes32(0), "Zero value is not allowed");
         require(bytes(_uri).length > 0, "Should not be a empty uri");
         if (_documents[_name].lastModified == uint256(0)) {
-            _docNames.push(_name);
             _docIndexes[_name] = _docNames.length;
+            _docNames.push(_name);
         }
         _documents[_name] = Document(_documentHash, now, _uri);
         emit DocumentUpdated(_name, _uri, _documentHash);
@@ -51,14 +46,14 @@ contract ERC1643 is IERC1643, Ownable {
      */
     function removeDocument(bytes32 _name) external onlyOwner {
         require(_documents[_name].lastModified != uint256(0), "Document should be existed");
-        uint256 index = _docIndexes[_name] - 1;
+        uint256 index = _docIndexes[_name];
         if (index != _docNames.length - 1) {
             _docNames[index] = _docNames[_docNames.length - 1];
-            _docIndexes[_name] = index + 1; 
+            _docIndexes[_docNames[index]] = index;
         }
         _docNames.length--;
-        emit DocumentRemoved(_name, _documents[_name].uri, _documents[_name].docHash);
         delete _documents[_name];
+        emit DocumentRemoved(_name, _documents[_name].uri, _documents[_name].documentHash);
     }
 
     /**
@@ -71,7 +66,7 @@ contract ERC1643 is IERC1643, Ownable {
     function getDocument(bytes32 _name) external view returns (string, bytes32, uint256) {
         return (
             _documents[_name].uri,
-            _documents[_name].docHash,
+            _documents[_name].documentHash,
             _documents[_name].lastModified
         );
     }
