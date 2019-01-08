@@ -101,13 +101,13 @@ contract ERC1410Basic {
     function canTransferByPartition(address _from, address _to, bytes32 _partition, uint256 _value, bytes _data) external view returns (byte, bytes32, bytes32) {
         // TODO: Applied the check over the `_data` parameter
         if (!_validPartition(_partition, _from))
-            return (0x50, "Partition not exists", "0x0");
+            return (0x50, "Partition not exists", bytes32(""));
         else if (partitions[_from][partitionToIndex[_from][_partition]].amount < _value)
-            return (0x52, "Insufficent balance", "0x0");
+            return (0x52, "Insufficent balance", bytes32(""));
         else if (_to == address(0))
-            return (0x57, "Invalid receiver", "0x0");
+            return (0x57, "Invalid receiver", bytes32(""));
         else if (!KindMath.checkSub(balances[_from], _value) || !KindMath.checkAdd(balances[_to], _value))
-            return (0x50, "Overflow", "0x0");
+            return (0x50, "Overflow", bytes32(""));
         
         // Call function to get the receiver's partition. For current implementation returning the same as sender's
         return (0x51, "Success", _partition);
@@ -115,11 +115,11 @@ contract ERC1410Basic {
 
     function _transferByPartition(address _from, address _to, uint256 _value, bytes32 _partition, bytes _data, address _operator, bytes _operatorData) internal {
         require(_validPartition(_partition, _from), "Invalid partition"); 
-        require(partitions[_from][partitionToIndex[_from][_partition]].amount >= _value, "Insufficient balance");
+        require(partitions[_from][partitionToIndex[_from][_partition] - 1].amount >= _value, "Insufficient balance");
         require(_to != address(0), "0x address not allowed");
-
-        uint256 _fromIndex = partitionToIndex[_from][_partition];
-        uint256 _toIndex = partitionToIndex[_to][_partition];
+        uint256 _fromIndex = partitionToIndex[_from][_partition] - 1;
+        uint256 _toIndex = partitionToIndex[_to][_partition] - 1;
+        
         // Changing the state values
         partitions[_from][_fromIndex].amount = partitions[_from][_fromIndex].amount.sub(_value);
         balances[_from] = balances[_from].sub(_value);

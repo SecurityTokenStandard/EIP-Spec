@@ -19,6 +19,8 @@ contract ERC1410Standard is IERC1410, ERC1410Operator, Ownable {
         if (index == 0) {
             partitions[_tokenHolder].push(Partition(_value, _partition));
             partitionToIndex[_tokenHolder][_partition] = partitions[_tokenHolder].length;
+        } else {
+            partitions[_tokenHolder][index - 1].amount = partitions[_tokenHolder][index - 1].amount.add(_value);
         }
         _totalSupply = _totalSupply.add(_value);
         balances[_tokenHolder] = balances[_tokenHolder].add(_value);
