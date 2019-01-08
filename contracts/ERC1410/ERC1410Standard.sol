@@ -33,7 +33,7 @@ contract ERC1410Standard is IERC1410, ERC1410Operator, Ownable {
     /// @param _data Additional data attached to the burning of tokens
     function redeemByPartition(bytes32 _partition, uint256 _value, bytes _data) external {
         // Add the function to validate the `_data` parameter
-        _redeemByPartition(_partition, msg.sender, address(0), _value, _data, "0x0");
+        _redeemByPartition(_partition, msg.sender, address(0), _value, _data, "");
     }
 
     /// @notice Decreases totalSupply and the corresponding amount of the specified partition of tokenHolder

@@ -126,9 +126,8 @@ const zero_address = "0x0000000000000000000000000000000000000000";
                 assert.equal(tx.logs[0].args._to, tokenHolder1);
                 assert.equal(web3.utils.fromWei((tx.logs[0].args._value).toString()), 5);
                 assert.equal(web3.utils.toUtf8(tx.logs[0].args._data), "");
-                assert.equal(web3.utils.toUtf8(tx.logs[0].args._operatorData), "0x0");
+                assert.equal(web3.utils.toUtf8(tx.logs[0].args._operatorData), "");
             });
-
         })
     });
 });

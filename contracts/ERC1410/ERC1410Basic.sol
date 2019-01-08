@@ -85,7 +85,7 @@ contract ERC1410Basic {
         // some tokens of the same partition as well (To avoid the array index out of bound error).
         // Note- There is no operator used for the execution of this call so `_operator` value in
         // in event is address(0) same for the `_operatorData`
-        _transferByPartition(msg.sender, _to, _value, _partition, _data, address(0), "0x0");
+        _transferByPartition(msg.sender, _to, _value, _partition, _data, address(0), "");
     }
 
     /// @notice The standard provides an on-chain function to determine whether a transfer will succeed,
