@@ -60,10 +60,23 @@ contract ERC1410Standard is IERC1410, ERC1410Operator, Ownable {
         require(_validPartition(_partition, _from), "Invalid partition");
         uint256 index = partitionToIndex[_from][_partition] - 1;
         require(partitions[_from][index].amount >= _value, "Insufficient value");
-        partitions[_from][index].amount = partitions[_from][index].amount.sub(_value);
+        if (partitions[_from][index].amount == _value) {
+            _deletePartitionForHolder(_from, _partition, index);
+        } else {
+            partitions[_from][index].amount = partitions[_from][index].amount.sub(_value);
+        }
         balances[_from] = balances[_from].sub(_value);
         _totalSupply = _totalSupply.sub(_value);
         emit RedeemedByPartition(_partition, _operator, _from, _value, _data, _operatorData);
+    }
+
+    function _deletePartitionForHolder(address _holder, bytes32 _partition, uint256 index) internal {
+        if (index != partitions[_holder].length -1) {
+            partitions[_holder][index] = partitions[_holder][partitions[_holder].length -1];
+            partitionToIndex[_holder][partitions[_holder][index].partition] = index + 1;
+        }
+        delete partitionToIndex[_holder][_partition];
+        partitions[_holder].length--;
     }
 
     function _validateParams(bytes32 _partition, uint256 _value) internal pure {
