@@ -1,1 +1,0 @@
-// Test case for the PartialFungibleToken standard
