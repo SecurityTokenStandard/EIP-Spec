@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 
 import "./IERC1643.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
@@ -33,7 +33,7 @@ contract ERC1643 is IERC1643, Ownable {
      * @param _uri Off-chain uri of the document from where it is accessible to investors/advisors to read.
      * @param _documentHash hash (of the contents) of the document.
      */
-    function setDocument(bytes32 _name, string _uri, bytes32 _documentHash) external onlyOwner {
+    function setDocument(bytes32 _name, string calldata _uri, bytes32 _documentHash) external onlyOwner {
         require(_name != bytes32(0), "Zero value is not allowed");
         require(bytes(_uri).length > 0, "Should not be a empty uri");
         if (_documents[_name].lastModified == uint256(0)) {
@@ -68,7 +68,7 @@ contract ERC1643 is IERC1643, Ownable {
      * @return bytes32 The hash (of the contents) of the document.
      * @return uint256 the timestamp at which the document was last modified.
      */
-    function getDocument(bytes32 _name) external view returns (string, bytes32, uint256) {
+    function getDocument(bytes32 _name) external view returns (string memory, bytes32, uint256) {
         return (
             _documents[_name].uri,
             _documents[_name].docHash,
@@ -80,7 +80,7 @@ contract ERC1643 is IERC1643, Ownable {
      * @notice Used to retrieve a full list of documents attached to the smart contract.
      * @return bytes32 List of all documents names present in the contract.
      */
-    function getAllDocuments() external view returns (bytes32[]) {
+    function getAllDocuments() external view returns (bytes32[] memory) {
         return _docNames;
     }
 

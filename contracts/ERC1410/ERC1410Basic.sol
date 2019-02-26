@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "../math/KindMath.sol";
@@ -63,7 +63,7 @@ contract ERC1410Basic {
     /// @notice Use to get the list of partitions `_tokenHolder` is associated with
     /// @param _tokenHolder An address corresponds whom partition list is queried
     /// @return List of partitions
-    function partitionsOf(address _tokenHolder) external view returns (bytes32[]) {
+    function partitionsOf(address _tokenHolder) external view returns (bytes32[] memory) {
         bytes32[] memory partitionsList = new bytes32[](partitions[_tokenHolder].length);
         for (uint256 i = 0; i < partitions[_tokenHolder].length; i++) {
             partitionsList[i] = partitions[_tokenHolder][i].partition;
@@ -77,7 +77,7 @@ contract ERC1410Basic {
     /// @param _value The amount of tokens to transfer from `_partition`
     /// @param _data Additional data attached to the transfer of tokens
     /// @return The partition to which the transferred tokens were allocated for the _to address
-    function transferByPartition(bytes32 _partition, address _to, uint256 _value, bytes _data) external returns (bytes32) {
+    function transferByPartition(bytes32 _partition, address _to, uint256 _value, bytes calldata _data) external returns (bytes32) {
         // Add a function to verify the `_data` parameter
         // TODO: Need to create the bytes division of the `_partition` so it can be easily findout in which receiver's partition
         // token will transfered. For current implementation we are assuming that the receiver's partition will be same as sender's
@@ -98,7 +98,7 @@ contract ERC1410Basic {
     /// @return ESC (Ethereum Status Code) following the EIP-1066 standard
     /// @return Application specific reason codes with additional details
     /// @return The partition to which the transferred tokens were allocated for the _to address
-    function canTransferByPartition(address _from, address _to, bytes32 _partition, uint256 _value, bytes _data) external view returns (byte, bytes32, bytes32) {
+    function canTransferByPartition(address _from, address _to, bytes32 _partition, uint256 _value, bytes calldata _data) external view returns (byte, bytes32, bytes32) {
         // TODO: Applied the check over the `_data` parameter
         if (!_validPartition(_partition, _from))
             return (0x50, "Partition not exists", bytes32(""));
@@ -113,7 +113,7 @@ contract ERC1410Basic {
         return (0x51, "Success", _partition);
     }
 
-    function _transferByPartition(address _from, address _to, uint256 _value, bytes32 _partition, bytes _data, address _operator, bytes _operatorData) internal {
+    function _transferByPartition(address _from, address _to, uint256 _value, bytes32 _partition , bytes memory _data, address _operator, bytes memory _operatorData) internal {
         require(_validPartition(_partition, _from), "Invalid partition"); 
         require(partitions[_from][partitionToIndex[_from][_partition] - 1].amount >= _value, "Insufficient balance");
         require(_to != address(0), "0x address not allowed");
