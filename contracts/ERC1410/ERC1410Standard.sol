@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 
 import "./ERC1410Operator.sol";
 import "./IERC1410.sol";
@@ -11,7 +11,7 @@ contract ERC1410Standard is IERC1410, ERC1410Operator, Ownable {
     /// @param _tokenHolder The token holder whose balance should be increased
     /// @param _value The amount by which to increase the balance
     /// @param _data Additional data attached to the minting of tokens
-    function issueByPartition(bytes32 _partition, address _tokenHolder, uint256 _value, bytes _data) external onlyOwner {
+    function issueByPartition(bytes32 _partition, address _tokenHolder, uint256 _value, bytes calldata _data) external onlyOwner {
         // Add the function to validate the `_data` parameter
         _validateParams(_partition, _value);
         require(_tokenHolder != address(0), "Invalid token receiver");
@@ -31,7 +31,7 @@ contract ERC1410Standard is IERC1410, ERC1410Operator, Ownable {
     /// @param _partition The partition to allocate the decrease in balance
     /// @param _value The amount by which to decrease the balance
     /// @param _data Additional data attached to the burning of tokens
-    function redeemByPartition(bytes32 _partition, uint256 _value, bytes _data) external {
+    function redeemByPartition(bytes32 _partition, uint256 _value, bytes calldata _data) external {
         // Add the function to validate the `_data` parameter
         _redeemByPartition(_partition, msg.sender, address(0), _value, _data, "");
     }
@@ -43,7 +43,7 @@ contract ERC1410Standard is IERC1410, ERC1410Operator, Ownable {
     /// @param _value The amount by which to decrease the balance
     /// @param _data Additional data attached to the burning of tokens
     /// @param _operatorData Additional data attached to the transfer of tokens by the operator
-    function operatorRedeemByPartition(bytes32 _partition, address _tokenHolder, uint256 _value, bytes _data, bytes _operatorData) external {
+    function operatorRedeemByPartition(bytes32 _partition, address _tokenHolder, uint256 _value, bytes calldata _data, bytes calldata _operatorData) external {
         // Add the function to validate the `_data` parameter
         // TODO: Add a functionality of verifying the `_operatorData`
         require(_tokenHolder != address(0), "Invalid from address");
@@ -54,7 +54,7 @@ contract ERC1410Standard is IERC1410, ERC1410Operator, Ownable {
         _redeemByPartition(_partition, _tokenHolder, msg.sender, _value, _data, _operatorData);
     }
 
-    function _redeemByPartition(bytes32 _partition, address _from, address _operator, uint256 _value, bytes _data, bytes _operatorData) internal {
+    function _redeemByPartition(bytes32 _partition, address _from, address _operator, uint256 _value, bytes memory _data, bytes memory _operatorData) internal {
         // Add the function to validate the `_data` parameter
         _validateParams(_partition, _value);
         require(_validPartition(_partition, _from), "Invalid partition");

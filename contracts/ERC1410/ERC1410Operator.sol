@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 
 import "./ERC1410Basic.sol";
 
@@ -75,7 +75,7 @@ contract ERC1410Operator is ERC1410Basic {
     /// @param _data Additional data attached to the transfer of tokens
     /// @param _operatorData Additional data attached to the transfer of tokens by the operator
     /// @return The partition to which the transferred tokens were allocated for the _to address
-    function operatorTransferByPartition(bytes32 _partition, address _from, address _to, uint256 _value, bytes _data, bytes _operatorData) external returns (bytes32) {
+    function operatorTransferByPartition(bytes32 _partition, address _from, address _to, uint256 _value, bytes calldata _data, bytes calldata _operatorData) external returns (bytes32) {
         // TODO: Add a functionality of verifying the `_operatorData`
         // TODO: Add a functionality of verifying the `_data`
         require(

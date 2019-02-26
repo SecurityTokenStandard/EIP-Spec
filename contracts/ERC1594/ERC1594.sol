@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 
 import "./IERC1594.sol";
 import "../ERC20Token.sol";
@@ -32,7 +32,7 @@ contract ERC1594 is IERC1594, ERC20Token, Ownable {
      * for the token contract to interpret or record. This could be signed data authorising the transfer
      * (e.g. a dynamic whitelist) but is flexible enough to accomadate other use-cases.
      */
-    function transferWithData(address _to, uint256 _value, bytes _data) external {
+    function transferWithData(address _to, uint256 _value, bytes calldata _data) external {
         // Add a function to validate the `_data` parameter
         _transfer(msg.sender, _to, _value);
     }
@@ -50,7 +50,7 @@ contract ERC1594 is IERC1594, ERC20Token, Ownable {
      * for the token contract to interpret or record. This could be signed data authorising the transfer
      * (e.g. a dynamic whitelist) but is flexible enough to accomadate other use-cases.
      */
-    function transferFromWithData(address _from, address _to, uint256 _value, bytes _data) external {
+    function transferFromWithData(address _from, address _to, uint256 _value, bytes calldata _data) external {
         // Add a function to validate the `_data` parameter
         _transferFrom(msg.sender, _from, _to, _value);
     }
@@ -75,7 +75,7 @@ contract ERC1594 is IERC1594, ERC20Token, Ownable {
      * @param _value The amount of tokens need to be issued
      * @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
      */
-    function issue(address _tokenHolder, uint256 _value, bytes _data) external onlyOwner {
+    function issue(address _tokenHolder, uint256 _value, bytes calldata _data) external onlyOwner {
         // Add a function to validate the `_data` parameter
         require(issuance, "Issuance is closed");
         _mint(_tokenHolder, _value);
@@ -89,7 +89,7 @@ contract ERC1594 is IERC1594, ERC20Token, Ownable {
      * @param _value The amount of tokens need to be redeemed
      * @param _data The `bytes _data` it can be used in the token contract to authenticate the redemption.
      */
-    function redeem(uint256 _value, bytes _data) external {
+    function redeem(uint256 _value, bytes calldata _data) external {
         // Add a function to validate the `_data` parameter
         _burn(msg.sender, _value);
         emit Redeemed(address(0), msg.sender, _value, _data);
@@ -104,7 +104,7 @@ contract ERC1594 is IERC1594, ERC20Token, Ownable {
      * @param _value The amount of tokens need to be redeemed
      * @param _data The `bytes _data` it can be used in the token contract to authenticate the redemption.
      */
-    function redeemFrom(address _tokenHolder, uint256 _value, bytes _data) external {
+    function redeemFrom(address _tokenHolder, uint256 _value, bytes calldata _data) external {
         // Add a function to validate the `_data` parameter
         _burnFrom(_tokenHolder, _value);
         emit Redeemed(msg.sender, _tokenHolder, _value, _data);
@@ -121,7 +121,7 @@ contract ERC1594 is IERC1594, ERC20Token, Ownable {
      * @return byte Ethereum status code (ESC)
      * @return bytes32 Application specific reason code 
      */
-    function canTransfer(address _to, uint256 _value, bytes _data) external view returns (bool, byte, bytes32) {
+    function canTransfer(address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32) {
         // Add a function to validate the `_data` parameter
         if (_balances[msg.sender] < _value)
             return (false, 0x52, bytes32(0));
@@ -146,7 +146,7 @@ contract ERC1594 is IERC1594, ERC20Token, Ownable {
      * @return byte Ethereum status code (ESC)
      * @return bytes32 Application specific reason code 
      */
-    function canTransferFrom(address _from, address _to, uint256 _value, bytes _data) external view returns (bool, byte, bytes32) {
+    function canTransferFrom(address _from, address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32) {
         // Add a function to validate the `_data` parameter
         if (_value > _allowed[_from][msg.sender])
             return (false, 0x53, bytes32(0));
