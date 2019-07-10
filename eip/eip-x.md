@@ -60,11 +60,15 @@ For example, Alice has 100 ACME:
 
 Alice can now only transfer 60 ACME (she has a `totalCustodyLimit` of 40).
 
-Alice can only put tokens into custody provided that she has sufficient free (un-custodied) allowance. This provides the guarantee that a custodian will always be able to transfer up to their custodyLimit of tokens.
+Alice can only put tokens into custody provided that she has sufficient free (un-custodied) allowance. This provides the guarantee that a custodian will always be able to transfer up to their custodyLimit of tokens. This means that the base transfer function must ensure that the remaining balance of the token holder is at least `totalCustodyLimit` and otherwise revert.
 
 As the custodian (external address or smart contract) exercises their right to transfer ACME tokens on behalf of Alice, their `custodyLimit` is decreased accordingly.
 
 A custodian transfers tokens by calling `transferCustody`. Calling this function decreases a custodians custodyLimit appropriately on completion.
+
+If the token also implements ERC-1410, then the `totalCustodyLimit` can be presented as a partition of the token holders balance.
+
+When a custodian is transferring tokens on behalf of a token holder, any other transfer rules must be respected (e.g. `canTransfer` should be true for the tokens being transferred from the current beneficial owner to the new owner irrespective of the fact that they are being transferred by a custodian rather than directly by the beneficial owner).
 
 ### increaseCustodyLimit
 
