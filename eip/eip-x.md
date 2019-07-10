@@ -7,7 +7,7 @@ status: Draft
 type: Standards Track
 category: ERC
 created: 2019-07-09
-require: ERC20 / ERC720
+require:
 
 ---
 
@@ -70,9 +70,9 @@ A custodian transfers tokens by calling `transferCustody`. Calling this function
 
 Used to increase the amount of tokens held in custody by the specified custodian. Note that a token holder can only ever increase this limit and cannot unilaterally decrease it. The only way this limit can be decreased is by the custodian transferring tokens. A custodian can transfer tokens back to the same beneficiary if they wish to remove their custody limit without impacting the beneficial owner.
 
-`increaseCustodyLimit` must throw if unsuccessful.
-The sum of `_amount` and `totalCustodyLimit` MUST NOT be greater than the token holders balance
-The event `CustodyLimitChanged` MUST be emitted if the custody limit is successfully changed.
+`increaseCustodyLimit` must throw if unsuccessful.  
+The sum of `_amount` and `totalCustodyLimit` MUST NOT be greater than the token holders balance.  
+The event `CustodyLimitChanged` MUST be emitted if the custody limit is successfully changed.  
 
 ``` solidity
 function increaseCustodyLimit(address _custodian, uint256 _amount) external;
@@ -84,9 +84,9 @@ As per `increaseCustodyLimit` but can be called by someone other than the token 
 
 The token holder can provide the caller with signed data to authorise the custody limit being amended, and anyone (e.g. the custodian) can then call this function to update the custody limit.
 
-`increaseCustodyLimitOf` must throw if unsuccessful.
-The sum of `_amount` and `totalCustodyLimit` MUST NOT be greater than the token holders balance
-The event `CustodyLimitChanged` MUST be emitted if the custody limit is successfully changed.
+`increaseCustodyLimitOf` must throw if unsuccessful.  
+The sum of `_amount` and `totalCustodyLimit` MUST NOT be greater than the token holders balance.  
+The event `CustodyLimitChanged` MUST be emitted if the custody limit is successfully changed.  
 
 ``` solidity
 function increaseCustodyLimitOf(address _tokenHolder, address _custodian, uint256 _amount, uint256 _nonce, bytes _sig) external;
@@ -104,8 +104,8 @@ function custodyLimit(address _tokenHolder, address _custodian) external view re
 
 Returns the total amount of tokens that the token holder has assigned under custody to custodians.
 
-The token holder MUST always have a token balance greater than their `totalCustodyLimit`
-`totalCustodyLimit` MUST be the sum across all custodians of `custodyLimit`.
+The token holder MUST always have a token balance greater than their `totalCustodyLimit`.  
+`totalCustodyLimit` MUST be the sum across all custodians of `custodyLimit`.  
 
 ``` solidity
 function totalCustodyLimit(address _tokenHolder) external view returns (uint256);
@@ -115,9 +115,9 @@ function totalCustodyLimit(address _tokenHolder) external view returns (uint256)
 
 Used by a custodian to transfer tokens over which they have custody.
 
-MUST emit a `CustodyTransfer` event on successful completion.
-MUST emit a `CustodyLimitChanged` event on successful completion.
-MUST decrease the `custodyLimit` of the custodian by `_amount`
+MUST emit a `CustodyTransfer` event on successful completion.  
+MUST emit a `CustodyLimitChanged` event on successful completion.  
+MUST decrease the `custodyLimit` of the custodian by `_amount`.  
 
 ``` solidity
 function transferCustody(address _tokenHolder, address _receiver, uint256 _amount) external;
