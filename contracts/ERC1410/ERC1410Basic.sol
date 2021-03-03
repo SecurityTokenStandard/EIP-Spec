@@ -118,6 +118,11 @@ contract ERC1410Basic {
         require(partitions[_from][partitionToIndex[_from][_partition] - 1].amount >= _value, "Insufficient balance");
         require(_to != address(0), "0x address not allowed");
         uint256 _fromIndex = partitionToIndex[_from][_partition] - 1;
+        
+        if (partitions[_to].length == 0) {
+            partitions[_to].push(Partition(0, _partition));
+            partitionToIndex[_to][_partition] = partitions[_to].length;
+        }
         uint256 _toIndex = partitionToIndex[_to][_partition] - 1;
         
         // Changing the state values
